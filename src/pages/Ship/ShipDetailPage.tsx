@@ -1,43 +1,50 @@
-import { MainLayout } from '@/components/layout/MainLayout'
+import { MainLayout } from "@/components/layout/MainLayout";
+import { useParams } from "react-router-dom";
 
-const sections = [
-  'Mission',
-  'Personnel',
-  'Equipment',
-  'Maintenance',
-  'Risk',
-  'History',
-  'Assessment',
-]
+import { fleet } from "@/data/fleet";
+
+import ShipHeader from "@/components/ship/ShipHeader";
+import PersonnelCard from "@/components/ship/PersonnelCard";
+import EquipmentCard from "@/components/ship/EquipmentCard";
+import MissionCard from "@/components/ship/MissionCard";
+import RecommendationCard from "@/components/ship/RecommendationCard";
 
 export default function ShipDetailPage() {
+  const { id } = useParams();
+
+  const ship = fleet.find((s) => s.id === id);
+
+  if (!ship) {
+    return (
+      <MainLayout>
+        <div className="text-center text-red-400 text-xl">
+          Ship not found
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6 shadow-lg">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-slate-400">
-            Ship Detail
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold text-white">เรือ ต.991</h2>
-          <p className="mt-3 max-w-2xl text-sm text-slate-400">
-            Vessel profile and readiness summary for the patrol craft ต.991.
-          </p>
-        </section>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {sections.map((section) => (
-            <div
-              key={section}
-              className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5"
-            >
-              <h3 className="text-lg font-semibold text-white">{section}</h3>
-              <p className="mt-2 text-sm text-slate-400">
-                Detailed information for the {section.toLowerCase()} section will be displayed here.
-              </p>
-            </div>
-          ))}
+      <div className="space-y-6">
+
+        <ShipHeader ship={ship} />
+
+        <div className="grid gap-4 md:grid-cols-2">
+
+          <PersonnelCard ship={ship} />
+
+          <EquipmentCard ship={ship} />
+
+          <MissionCard ship={ship} />
+
+          <RecommendationCard ship={ship} />
+
         </div>
+
       </div>
+
     </MainLayout>
-  )
+  );
 }

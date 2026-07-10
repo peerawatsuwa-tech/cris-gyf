@@ -1,22 +1,68 @@
-interface ShipHeaderProps {
-  name: string;
-  hullNumber: string;
-  status: string;
+import type { Ship } from "@/types/ship";
+import { calculateReadiness } from "@/engine/calculateReadiness";
+
+interface Props {
+  ship: Ship;
 }
 
-export function ShipHeader({ name, hullNumber, status }: ShipHeaderProps) {
+export default function ShipHeader({ ship }: Props) {
+  const result = calculateReadiness(ship);
+
+  const readiness = {
+    Y: "READY",
+    Q: "LIMITED",
+    N: "NOT READY",
+  }[result.readiness];
+
+  const color = {
+    Y: "text-emerald-400",
+    Q: "text-yellow-400",
+    N: "text-red-400",
+  }[result.readiness];
+
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-6">
-      <div className="flex items-center justify-between">
+    <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6 shadow-lg">
+
+      <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+        Combat Readiness Assessment
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold text-white">
+        {ship.shipName}
+      </h2>
+
+      <p className="mt-1 text-slate-400">
+        {ship.hullNumber} • {ship.shipClass}
+      </p>
+
+      <div className="mt-6 grid grid-cols-2 gap-6">
+
         <div>
-          <p className="text-sm text-slate-400">Ship Overview</p>
-          <h2 className="text-2xl font-semibold text-white">{name}</h2>
-          <p className="text-sm text-slate-400">Hull {hullNumber}</p>
+
+          <p className="text-sm text-slate-400">
+            Readiness
+          </p>
+
+          <p className={`mt-1 text-2xl font-bold ${color}`}>
+            {readiness}
+          </p>
+
         </div>
-        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-medium text-emerald-400">
-          {status}
-        </span>
+
+        <div>
+
+          <p className="text-sm text-slate-400">
+            Overall Score
+          </p>
+
+          <p className="mt-1 text-2xl font-bold text-sky-400">
+            {result.score.toFixed(1)}%
+          </p>
+
+        </div>
+
       </div>
-    </div>
+
+    </section>
   );
 }

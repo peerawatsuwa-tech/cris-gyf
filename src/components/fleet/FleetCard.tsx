@@ -24,6 +24,7 @@ export default function FleetCard({ ship }: Props) {
 
   
   return (
+    
     <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-6">
 
       <div className="flex items-center justify-between">
@@ -81,11 +82,25 @@ export default function FleetCard({ ship }: Props) {
           </span>
 
           <span className="text-white">
-            {result.readiness}
-          </span>
+  {ship.status}
+</span>
 
         </div>
+<div className="mt-2 flex justify-between">
+  <span className="text-slate-400">
+    Score
+  </span>
 
+  <span className="font-semibold text-sky-400">
+    {result.score.toFixed(1)}%
+  </span>
+</div>
+<div className="mt-3 h-2 w-full rounded-full bg-slate-700">
+  <div
+    className="h-2 rounded-full rounded-full bg-sky-500"
+    style={{ width: `${result.score}%` }}
+  />
+</div>
       </div>
 
       <Link

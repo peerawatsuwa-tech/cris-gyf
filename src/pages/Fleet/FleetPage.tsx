@@ -6,9 +6,10 @@ import FleetSearch from "@/components/fleet/FleetSearch";
 import { fleet } from "@/data/fleet";
 
 import { useState } from "react";
-const [filter, setFilter] = useState("");
+
 
 export default function FleetPage() {
+  const [filter, setFilter] = useState("");
   return (
     <MainLayout>
       <div className="space-y-6">

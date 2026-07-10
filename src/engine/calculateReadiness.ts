@@ -3,7 +3,7 @@ import { equipmentScore } from './helpers';
 import { getReadiness } from './readiness';
 import type { Ship } from "@/types/ship";
 
-export function calculateReadiness(ship: Ship) {
+export function calculateReadiness(ship:Ship) {
   const crew = (ship.crew / ship.authorizedCrew) * 100;
 
   const score =

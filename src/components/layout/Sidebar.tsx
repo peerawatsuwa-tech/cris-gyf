@@ -6,42 +6,44 @@ Settings,
 LogOut,
 ClipboardList,
 } from "lucide-react";
+import { UI } from "@/constants/uiText";
 
 const navItems = [
   {
-    label: "Command Center",
+    label: UI.commandCenter,
     icon: LayoutGrid,
     href: "/",
   },
 
   {
-    label: "Dashboard",
+    label: UI.dashboard,
     icon: BarChart3,
     href: "/dashboard",
   },
 
   {
-    label: "Fleet",
+    label: UI.fleet,
     icon: ShipWheel,
     href: "/fleet",
   },
 
   {
-    label: "Reports",
+    label: UI.reports,
     icon: BarChart3,
     href: "/reports",
   },
 
   {
-    label: "Settings",
+    label: UI.settings,
     icon: Settings,
     href: "/settings",
   },
+
   {
-  label: "Assessment",
-  icon: ClipboardList,
-  href: "/assessment",
-},
+    label: UI.assessment,
+    icon: ClipboardList,
+    href: "/assessment",
+  },
 ];
 
 export function Sidebar() {

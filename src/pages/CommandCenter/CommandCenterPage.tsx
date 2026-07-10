@@ -1,10 +1,6 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import FleetOverviewCard from "@/components/command/FleetOverviewCard";
-import MissionOverviewCard from "@/components/command/MissionOverviewCard";
-import CriticalAlertCard from "@/components/command/CriticalAlertCard";
-import ImpactCard from "@/components/command/ImpactCard";
-import PriorityFleetCard from "@/components/command/PriorityFleetCard";
-import ImmediateActionCard from "@/components/command/ImmediateActionCard";
+import CommandGrid from "@/components/command/layout/CommandGrid";
+import CommanderStatusBar from "@/components/command/cards/CommanderStatusBar";
 
 export default function CommandCenterPage() {
   return (
@@ -24,12 +20,8 @@ export default function CommandCenterPage() {
           <p className="mt-3 text-slate-400">
             Coast Guard Squadron Operational Picture
           </p>
-<FleetOverviewCard />
-<MissionOverviewCard />
-<CriticalAlertCard />
-<ImpactCard />
-<PriorityFleetCard />
-<ImmediateActionCard />
+        <CommanderStatusBar />  
+<CommandGrid />
         </div>
 
       </div>

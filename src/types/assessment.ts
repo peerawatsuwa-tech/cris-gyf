@@ -1,8 +1,15 @@
-import type { ReadinessLevel } from './ship';
+export interface AssessmentResult {
 
-export interface Assessment {
+  personnel: number;
+
+  equipment: number;
+
+  mission: number;
+
   overall: number;
-  readiness: ReadinessLevel;
-  confidence: number;
-  risk: string;
+
+  readiness: "Y" | "Q" | "N";
+
+  recommendations: string[];
+
 }

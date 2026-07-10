@@ -10,7 +10,7 @@ const sections = [
   'Assessment',
 ]
 
-export function ShipDetailPage() {
+export default function ShipDetailPage() {
   return (
     <MainLayout>
       <div className="space-y-6">

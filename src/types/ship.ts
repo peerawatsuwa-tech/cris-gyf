@@ -1,17 +1,41 @@
-export type ReadinessLevel = 'Y' | 'Q' | 'N';
+export type ReadinessLevel = "Y" | "Q" | "N";
 
 export interface Ship {
-  id: number;
+
+  id: string;
+
   hullNumber: string;
-  name: string;
-  fleet: string;
+
+  shipName: string;
+
+  squadron: string;
+
   shipClass: string;
 
   readiness: ReadinessLevel;
-  cRating: string;
+
+  cRating: "C1" | "C2" | "C3" | "C4";
 
   status: string;
 
   crew: number;
+
   authorizedCrew: number;
+
+  equipment: {
+
+    radar: string;
+
+    communication: string;
+
+    weapon: string;
+
+    navigation: string;
+
+    eoir: string;
+
+    rhib: string;
+
+  };
+
 }

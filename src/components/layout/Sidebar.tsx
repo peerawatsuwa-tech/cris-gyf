@@ -1,11 +1,48 @@
-import { LayoutGrid, ShipWheel, BarChart3, Settings, LogOut } from 'lucide-react'
+import {
+LayoutGrid,
+ShipWheel,
+BarChart3,
+Settings,
+LogOut,
+ClipboardList,
+} from "lucide-react";
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
-  { label: 'Fleet', icon: ShipWheel, href: '/fleet' },
-  { label: 'Reports', icon: BarChart3, href: '/reports' },
-  { label: 'Settings', icon: Settings, href: '/settings' },
-]
+  {
+    label: "Command Center",
+    icon: LayoutGrid,
+    href: "/",
+  },
+
+  {
+    label: "Dashboard",
+    icon: BarChart3,
+    href: "/dashboard",
+  },
+
+  {
+    label: "Fleet",
+    icon: ShipWheel,
+    href: "/fleet",
+  },
+
+  {
+    label: "Reports",
+    icon: BarChart3,
+    href: "/reports",
+  },
+
+  {
+    label: "Settings",
+    icon: Settings,
+    href: "/settings",
+  },
+  {
+  label: "Assessment",
+  icon: ClipboardList,
+  href: "/assessment",
+},
+];
 
 export function Sidebar() {
   return (

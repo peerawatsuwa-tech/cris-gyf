@@ -1,5 +1,5 @@
 import type { Ship } from "@/types/ship";
-import { calculateMission } from "@/engine/missionEngine";
+import { calculateMission } from "@/engine/MissionEngine";
 
 interface Props {
   ship: Ship;

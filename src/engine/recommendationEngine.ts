@@ -1,11 +1,15 @@
 import type { Ship } from "@/types/ship";
 import type { Recommendation } from "@/types/recommendation";
 
-export function calculateRecommendation(ship: Ship): Recommendation[] {
+export function calculateRecommendation(
+  ship: Ship
+): Recommendation[] {
 
   const list: Recommendation[] = [];
 
+  // -----------------------------
   // กำลังพล
+  // -----------------------------
 
   if (ship.crew < ship.authorizedCrew) {
 
@@ -13,47 +17,37 @@ export function calculateRecommendation(ship: Ship): Recommendation[] {
 
       priority: "HIGH",
 
-      title: "Increase Personnel",
+      title: "เพิ่มกำลังพลให้ครบอัตรา",
 
-      impact: "Improve overall readiness score"
+      impact:
+        "เพิ่มความพร้อมรบโดยรวม และลดความเสี่ยงต่อทุกภารกิจ",
 
     });
 
   }
 
-  // RHIB
+  // -----------------------------
+  // Radar
+  // -----------------------------
 
-  if (ship.equipment.rhib !== "Operational") {
+  if (ship.equipment.radar !== "Operational") {
 
     list.push({
 
       priority: "HIGH",
 
-      title: "Repair RHIB",
+      title: "เร่งซ่อมระบบเรดาร์",
 
-      impact: "Restore Maritime Law Enforcement capability"
-
-    });
-
-  }
-
-  // EOIR
-
-  if (ship.equipment.eoir !== "Operational") {
-
-    list.push({
-
-      priority: "MEDIUM",
-
-      title: "Repair EO/IR System",
-
-      impact: "Improve surveillance capability"
+      impact:
+        "ส่งผลกระทบต่อการตรวจการณ์และการแสดงกำลังทางเรือ",
 
     });
 
   }
 
+  // -----------------------------
   // Communication
+  // -----------------------------
 
   if (ship.equipment.communication !== "Operational") {
 
@@ -61,15 +55,94 @@ export function calculateRecommendation(ship: Ship): Recommendation[] {
 
       priority: "HIGH",
 
-      title: "Repair Communication System",
+      title: "ซ่อมระบบสื่อสาร",
 
-      impact: "Critical for all missions"
+      impact:
+        "ส่งผลกระทบต่อทุกภารกิจและการควบคุมบังคับบัญชา",
 
     });
 
   }
 
-  // ถ้าไม่มีปัญหาเลย
+  // -----------------------------
+  // Weapon
+  // -----------------------------
+
+  if (ship.equipment.weapon !== "Operational") {
+
+    list.push({
+
+      priority: "HIGH",
+
+      title: "ซ่อมระบบอาวุธ",
+
+      impact:
+        "ลดขีดความสามารถในการบังคับใช้กฎหมายทางทะเล",
+
+    });
+
+  }
+
+  // -----------------------------
+  // RHIB
+  // -----------------------------
+
+  if (ship.equipment.rhib !== "Operational") {
+
+    list.push({
+
+      priority: "MEDIUM",
+
+      title: "ซ่อมเรือ RHIB",
+
+      impact:
+        "กระทบต่อภารกิจตรวจค้น จับกุม และค้นหาและช่วยเหลือ",
+
+    });
+
+  }
+
+  // -----------------------------
+  // EO/IR
+  // -----------------------------
+
+  if (ship.equipment.eoir !== "Operational") {
+
+    list.push({
+
+      priority: "MEDIUM",
+
+      title: "ซ่อมระบบ EO / IR",
+
+      impact:
+        "ลดประสิทธิภาพการตรวจการณ์และการปฏิบัติกลางคืน",
+
+    });
+
+  }
+
+  // -----------------------------
+  // Navigation
+  // -----------------------------
+
+  if (ship.equipment.navigation !== "Operational") {
+
+    list.push({
+
+      priority: "MEDIUM",
+
+      title: "ซ่อมระบบเดินเรือ",
+
+      impact:
+        "ส่งผลต่อความปลอดภัยในการเดินเรือและภารกิจ SAR",
+
+    });
+
+  }
+
+  // -----------------------------
+  // Ready
+  // -----------------------------
 
   if (list.length === 0) {
 
@@ -77,14 +150,25 @@ export function calculateRecommendation(ship: Ship): Recommendation[] {
 
       priority: "LOW",
 
-      title: "Ship Ready",
+      title: "เรืออยู่ในสภาพพร้อมปฏิบัติ",
 
-      impact: "Maintain current readiness"
+      impact:
+        "คงสภาพความพร้อมและดำเนินการบำรุงรักษาตามแผน",
 
     });
 
   }
 
-  return list;
+  // เรียงลำดับความสำคัญ
+
+  const order = {
+    HIGH: 1,
+    MEDIUM: 2,
+    LOW: 3,
+  };
+
+  return list.sort(
+    (a, b) => order[a.priority] - order[b.priority]
+  );
 
 }

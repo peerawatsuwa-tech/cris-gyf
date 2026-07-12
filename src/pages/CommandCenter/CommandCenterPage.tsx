@@ -1,6 +1,7 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import CommandGrid from "@/components/command/layout/CommandGrid";
 import CommanderStatusBar from "@/components/command/cards/CommanderStatusBar";
+import CommanderBrief from "@/components/command/cards/CommanderBrief";
 
 export default function CommandCenterPage() {
   return (
@@ -59,7 +60,9 @@ export default function CommandCenterPage() {
 
         <CommanderStatusBar />
 
-        <CommandGrid />
+<CommanderBrief />
+
+<CommandGrid />
 
       </div>
     </MainLayout>

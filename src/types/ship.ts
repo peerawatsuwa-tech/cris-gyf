@@ -1,5 +1,10 @@
 export type ReadinessLevel = "Y" | "Q" | "N";
 
+export type EquipmentStatus =
+  | "Operational"
+  | "Limited"
+  | "Not Ready";
+
 export interface Ship {
 
   id: string;
@@ -24,17 +29,17 @@ export interface Ship {
 
   equipment: {
 
-    radar: string;
+    radar: EquipmentStatus;
 
-    communication: string;
+    communication: EquipmentStatus;
 
-    weapon: string;
+    weapon: EquipmentStatus;
 
-    navigation: string;
+    navigation: EquipmentStatus;
 
-    eoir: string;
+    eoir: EquipmentStatus;
 
-    rhib: string;
+    rhib: EquipmentStatus;
 
   };
 

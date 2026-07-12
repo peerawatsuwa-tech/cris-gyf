@@ -1,15 +1,51 @@
+import { Search } from "lucide-react";
+
 interface Props {
   value: string;
   onChange: (value: string) => void;
 }
 
-export default function FleetSearch({ value, onChange }: Props) {
+export default function FleetSearch({
+  value,
+  onChange,
+}: Props) {
   return (
-    <input
-      className="mb-6 w-full rounded-lg border p-3"
-      placeholder="ค้นหาเรือ..."
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
+    <div className="relative w-full">
+
+      <Search
+        className="
+          absolute
+          left-4
+          top-1/2
+          h-5
+          w-5
+          -translate-y-1/2
+          text-slate-500
+        "
+      />
+
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="ค้นหาหมายเลขเรือ หรือชื่อเรือ..."
+
+        className="
+          w-full
+          rounded-xl
+          border
+          border-slate-800
+          bg-slate-950/70
+          py-3
+          pl-12
+          pr-4
+          text-white
+          placeholder:text-slate-500
+          outline-none
+          transition
+          focus:border-sky-500
+        "
+      />
+
+    </div>
   );
 }

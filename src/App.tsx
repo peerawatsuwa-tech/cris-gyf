@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { FleetProvider } from "@/context/FleetContext";
 
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import FleetPage from "./pages/Fleet/FleetPage";
@@ -8,6 +9,7 @@ import AssessmentPage from "./pages/Assessment/AssessmentPage";
 
 export default function App() {
   return (
+    <FleetProvider>
     <BrowserRouter>
       <Routes>
 
@@ -23,5 +25,6 @@ export default function App() {
 
 </Routes>
     </BrowserRouter>
+    </FleetProvider>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 
 import PersonnelCard from "@/components/ship/PersonnelCard";
 import EquipmentCard from "@/components/ship/EquipmentCard";
@@ -13,7 +13,13 @@ import { calculateReadiness } from "@/engine/calculateReadiness";
 import { calculateMission } from "@/engine/MissionEngine";
 
 export default function AssessmentPage() {
-  const [shipId, setShipId] = useState(fleet[0].id);
+  const {
+    fleet,
+    updateShip,
+} = useFleet();
+
+const [shipId, setShipId] =
+useState(fleet[0].id);
 
   const ship = fleet.find((s) => s.id === shipId)!;
 
@@ -77,10 +83,15 @@ export default function AssessmentPage() {
             </select>
 
             <button
-              className="mt-5 w-full rounded-lg bg-sky-600 py-3 text-white font-semibold transition hover:bg-sky-700"
-            >
-              ประเมินความพร้อมรบ
-            </button>
+  onClick={() => {
+    updateShip(ship);
+
+    alert("ประเมินสำเร็จ");
+  }}
+  className="mt-5 w-full rounded-lg bg-sky-600 py-3 font-semibold text-white transition hover:bg-sky-700"
+>
+  ประเมินความพร้อมรบ
+</button>
           </div>
         </div>
 

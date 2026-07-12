@@ -1,25 +1,30 @@
 import type { Ship } from "@/types/ship";
-
 import { calculateRecommendation } from "@/engine/recommendationEngine";
 
 interface Props {
-
   ship: Ship;
-
 }
 
 export default function RecommendationCard({ ship }: Props) {
 
   const recommendations = calculateRecommendation(ship);
 
-  const color = {
-
-    HIGH: "text-red-400",
-
-    MEDIUM: "text-yellow-400",
-
-    LOW: "text-emerald-400",
-
+  const priorityConfig = {
+    HIGH: {
+      title: "เร่งด่วน",
+      color: "border-red-500 bg-red-500/10 text-red-400",
+      icon: "🔴",
+    },
+    MEDIUM: {
+      title: "ปานกลาง",
+      color: "border-yellow-500 bg-yellow-500/10 text-yellow-400",
+      icon: "🟡",
+    },
+    LOW: {
+      title: "ปกติ",
+      color: "border-emerald-500 bg-emerald-500/10 text-emerald-400",
+      icon: "🟢",
+    },
   };
 
   return (
@@ -27,43 +32,63 @@ export default function RecommendationCard({ ship }: Props) {
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
 
       <h3 className="text-lg font-semibold text-white">
-
-        Commander Recommendation
-
+        ข้อเสนอแนะสำหรับผู้บังคับบัญชา
       </h3>
 
-      <div className="mt-5 space-y-4">
+      <p className="mt-1 text-sm text-slate-400">
+        Commander Decision Support
+      </p>
 
-        {recommendations.map((item) => (
+      <div className="mt-6 space-y-4">
 
-          <div
-            key={item.title}
-            className="border-b border-slate-800 pb-3"
-          >
+        {recommendations.map((item) => {
+
+          const style = priorityConfig[item.priority];
+
+          return (
 
             <div
-              className={`font-semibold ${color[item.priority]}`}
+              key={item.title}
+              className={`rounded-xl border p-4 ${style.color}`}
             >
 
-              {item.priority}
+              <div className="flex items-center justify-between">
+
+                <div className="flex items-center gap-2">
+
+                  <span className="text-xl">
+                    {style.icon}
+                  </span>
+
+                  <span className="font-semibold">
+                    {style.title}
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div className="mt-4">
+
+                <p className="font-semibold text-white">
+                  {item.title}
+                </p>
+
+                <p className="mt-2 text-sm text-slate-300">
+                  ผลกระทบ :
+                </p>
+
+                <p className="mt-1 text-sm text-slate-400">
+                  {item.impact}
+                </p>
+
+              </div>
 
             </div>
 
-            <div className="mt-1 text-white">
+          );
 
-              {item.title}
-
-            </div>
-
-            <div className="mt-1 text-sm text-slate-400">
-
-              {item.impact}
-
-            </div>
-
-          </div>
-
-        ))}
+        })}
 
       </div>
 

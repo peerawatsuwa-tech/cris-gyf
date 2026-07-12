@@ -69,7 +69,7 @@ export default function CommandCenterPage() {
 </div>
 <CommanderBrief />
 
-<CommandGrid />
+{/* <CommandGrid /> */}
 
       </div>
     </MainLayout>

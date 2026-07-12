@@ -1,5 +1,6 @@
-export interface AssessmentResult {
+import type { Recommendation } from "@/types/recommendation";
 
+export interface AssessmentResult {
   personnel: number;
 
   equipment: number;
@@ -10,6 +11,5 @@ export interface AssessmentResult {
 
   readiness: "Y" | "Q" | "N";
 
-  recommendations: string[];
-
+  recommendations: Recommendation[];
 }

@@ -1,14 +1,5 @@
 import type { Ship } from "@/types/ship";
-
-export interface Recommendation {
-
-  priority: "HIGH" | "MEDIUM" | "LOW";
-
-  title: string;
-
-  impact: string;
-
-}
+import type { Recommendation } from "@/types/recommendation";
 
 export function calculateRecommendation(ship: Ship): Recommendation[] {
 

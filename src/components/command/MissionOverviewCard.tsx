@@ -3,53 +3,66 @@ import { calculateMission } from "@/engine/MissionEngine";
 
 export default function MissionOverviewCard() {
 
-  const all = fleet.flatMap(ship =>
-    calculateMission(ship)
-  );
+  const all = fleet.flatMap((ship) => calculateMission(ship));
 
-  const count = (name: string, readiness: "Y" | "Q" | "N") =>
+  const count = (
+    mission: string,
+    readiness: "Y" | "Q" | "N"
+  ) =>
     all.filter(
-      m =>
-        m.mission === name &&
+      (m) =>
+        m.mission === mission &&
         m.readiness === readiness
     ).length;
 
   const missions = [
-    "Maritime Presence",
-    "Maritime Law Enforcement",
-    "Search and Rescue",
+    {
+      title: "การแสดงกำลังทางทะเล",
+      key: "Maritime Presence",
+    },
+    {
+      title: "การบังคับใช้กฎหมายทางทะเล",
+      key: "Maritime Law Enforcement",
+    },
+    {
+      title: "ค้นหาและช่วยเหลือ",
+      key: "Search and Rescue",
+    },
   ];
 
   return (
-
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
 
       <h2 className="text-xl font-bold text-white">
-        Mission Overview
+        ภาพรวมภารกิจ
       </h2>
+
+      <p className="text-sm text-slate-400">
+        Mission Capability
+      </p>
 
       <div className="mt-6 space-y-6">
 
-        {missions.map((mission) => (
+        {missions.map((m) => (
 
-          <div key={mission}>
+          <div key={m.key}>
 
-            <p className="text-slate-300">
-              {mission}
+            <p className="font-semibold text-white">
+              {m.title}
             </p>
 
-            <div className="mt-2 flex gap-6 text-sm">
+            <div className="mt-3 flex gap-6">
 
-              <span className="text-emerald-400">
-                Y : {count(mission,"Y")}
+              <span className="font-semibold text-emerald-400">
+                🟢 {count(m.key, "Y")}
               </span>
 
-              <span className="text-yellow-400">
-                Q : {count(mission,"Q")}
+              <span className="font-semibold text-yellow-400">
+                🟡 {count(m.key, "Q")}
               </span>
 
-              <span className="text-red-400">
-                N : {count(mission,"N")}
+              <span className="font-semibold text-red-400">
+                🔴 {count(m.key, "N")}
               </span>
 
             </div>
@@ -61,7 +74,5 @@ export default function MissionOverviewCard() {
       </div>
 
     </div>
-
   );
-
 }

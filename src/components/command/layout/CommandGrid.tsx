@@ -8,19 +8,19 @@ import ImmediateActionCard from "../ImmediateActionCard";
 
 export default function CommandGrid() {
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 xl:grid-cols-2">
 
       <FleetOverviewCard />
 
-      <FleetHeatMap />
-
       <MissionOverviewCard />
+
+      <FleetHeatMap />
 
       <CriticalAlertCard />
 
-      <ImpactCard />
-
       <PriorityFleetCard />
+
+      <ImpactCard />
 
       <ImmediateActionCard />
 

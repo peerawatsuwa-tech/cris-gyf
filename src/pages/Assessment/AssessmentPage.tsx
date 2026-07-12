@@ -53,11 +53,11 @@ useState(fleet[0].id);
             Combat Readiness Assessment
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-white">
+          <h1 className="mt-2 text-2xl md:text-3xl font-bold text-white">
             การประเมินความพร้อมรบ
           </h1>
 
-          <p className="mt-2 text-slate-400">
+         <p className="mt-2 text-sm md:text-base text-slate-400">
             เลือกเรือเพื่อประเมินระดับความพร้อมรบ
           </p>
 

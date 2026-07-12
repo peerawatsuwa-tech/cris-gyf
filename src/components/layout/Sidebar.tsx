@@ -7,13 +7,15 @@ import {
   ClipboardList,
 } from "lucide-react";
 
+import { NavLink } from "react-router-dom";
+
 import { UI } from "@/constants/uiText";
 
 const navItems = [
   {
     label: UI.commandCenter,
     icon: LayoutGrid,
-    href: "/",
+    href:"/command",
   },
   {
     label: UI.dashboard,
@@ -47,22 +49,33 @@ export function Sidebar() {
     <aside className="flex h-full w-72 flex-col border-r border-slate-800 bg-slate-950 text-slate-200">
 
       {/* Header */}
+
       <div className="border-b border-slate-800 p-6">
 
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400">
-          CRIS
+
+          ROYAL THAI NAVY
+
         </p>
 
         <h2 className="mt-2 text-xl font-bold leading-tight text-white">
+
           Combat Readiness
+
           <br />
+
           Information System
+
         </h2>
 
         <p className="mt-3 text-sm text-slate-400">
-          กองเรือยามฝั่ง
-          <br />
+
           Coast Guard Squadron
+
+          <br />
+
+          CRIS v1.0
+
         </p>
 
       </div>
@@ -77,17 +90,27 @@ export function Sidebar() {
 
           return (
 
-            <a
+            <NavLink
               key={item.label}
-              href={item.href}
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-slate-800 hover:text-white"
+              to={item.href}
+              end={item.href === "/"}
+              className={({ isActive }) =>
+                `
+                  flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all
+                  ${
+                    isActive
+                      ? "bg-sky-600 text-white shadow-lg"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }
+                `
+              }
             >
 
-              <Icon className="h-5 w-5 text-sky-400" />
+              <Icon className="h-5 w-5" />
 
               <span>{item.label}</span>
 
-            </a>
+            </NavLink>
 
           );
 
@@ -101,21 +124,27 @@ export function Sidebar() {
 
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
 
-          <p className="text-xs uppercase tracking-wider text-slate-500">
-            System Version
+          <p className="text-xs uppercase tracking-widest text-slate-500">
+
+            System
+
           </p>
 
-          <p className="mt-1 font-semibold text-white">
-            CRIS Demo v0.9
+          <p className="mt-1 text-lg font-bold text-emerald-400">
+
+            CRIS v1.0
+
           </p>
 
           <p className="mt-2 text-xs text-slate-500">
-            Combat Readiness Information System
+
+            Official Demonstration
+
           </p>
 
         </div>
 
-        <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white">
+        <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-red-900/30 hover:text-red-300">
 
           <LogOut className="h-4 w-4" />
 

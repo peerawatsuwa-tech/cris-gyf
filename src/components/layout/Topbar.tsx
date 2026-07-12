@@ -6,6 +6,7 @@ import {
   Clock,
   Search,
   ShieldCheck,
+  UserCircle2,
 } from "lucide-react";
 
 export function Topbar() {
@@ -38,15 +39,15 @@ export function Topbar() {
 
   return (
 
-    <header className="flex items-center justify-between border-b border-slate-800 bg-slate-950/90 px-6 py-4">
+    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/90 px-4 py-4 md:px-6">
 
       {/* LEFT */}
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
 
         <div className="rounded-xl bg-sky-600 p-3">
 
-          <ShieldCheck className="h-8 w-8 text-white" />
+          <ShieldCheck className="h-7 w-7 text-white"/>
 
         </div>
 
@@ -54,19 +55,19 @@ export function Topbar() {
 
           <p className="text-xs uppercase tracking-[0.35em] text-sky-400">
 
-            Combat Readiness Information System
+            Royal Thai Navy
 
           </p>
 
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-xl font-bold text-white md:text-2xl">
 
-            ระบบประเมินความพร้อมรบ
+            Combat Readiness Information System
 
           </h1>
 
-          <p className="text-sm text-slate-400">
+          <p className="text-xs text-slate-400 md:text-sm">
 
-            กองเรือยามฝั่ง • Royal Thai Navy
+            Coast Guard Squadron
 
           </p>
 
@@ -76,16 +77,16 @@ export function Topbar() {
 
       {/* RIGHT */}
 
-      <div className="flex items-center gap-5">
+      <div className="flex flex-wrap items-center justify-end gap-3">
 
         {/* Search */}
 
-        <label className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2">
+        <label className="hidden lg:flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2">
 
-          <Search className="h-4 w-4 text-slate-500" />
+          <Search className="h-4 w-4 text-slate-500"/>
 
           <input
-            placeholder="ค้นหาเรือ..."
+            placeholder="Search Ship..."
             className="w-48 bg-transparent text-white outline-none placeholder:text-slate-500"
           />
 
@@ -93,9 +94,9 @@ export function Topbar() {
 
         {/* Date */}
 
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
 
-          <CalendarDays className="h-4 w-4 text-sky-400" />
+          <CalendarDays className="h-4 w-4 text-sky-400"/>
 
           <span className="text-sm text-slate-300">
 
@@ -107,11 +108,11 @@ export function Topbar() {
 
         {/* Time */}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2">
 
-          <Clock className="h-4 w-4 text-sky-400" />
+          <Clock className="h-4 w-4 text-sky-400"/>
 
-          <span className="text-sm text-slate-300">
+          <span className="text-sm font-medium text-white">
 
             {time}
 
@@ -119,21 +120,17 @@ export function Topbar() {
 
         </div>
 
-        {/* System */}
+        {/* Status */}
 
-        <div className="rounded-xl border border-emerald-700 bg-emerald-950/30 px-4 py-2">
+        <div className="hidden sm:flex items-center gap-2 rounded-xl border border-emerald-700 bg-emerald-950/30 px-3 py-2">
 
-          <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-emerald-400"/>
 
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <span className="text-sm font-semibold text-emerald-400">
 
-            <span className="text-sm font-semibold text-emerald-400">
+            SYSTEM ONLINE
 
-              ONLINE
-
-            </span>
-
-          </div>
+          </span>
 
         </div>
 
@@ -143,7 +140,7 @@ export function Topbar() {
 
           <button className="rounded-xl border border-slate-700 bg-slate-900 p-3 hover:bg-slate-800">
 
-            <Bell className="h-5 w-5 text-white" />
+            <Bell className="h-5 w-5 text-white"/>
 
           </button>
 
@@ -152,6 +149,30 @@ export function Topbar() {
             4
 
           </span>
+
+        </div>
+
+        {/* Commander */}
+
+        <div className="hidden lg:flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2">
+
+          <UserCircle2 className="h-7 w-7 text-sky-400"/>
+
+          <div>
+
+            <p className="text-xs text-slate-500">
+
+              Commander
+
+            </p>
+
+            <p className="text-sm font-semibold text-white">
+
+              Coast Guard Squadron
+
+            </p>
+
+          </div>
 
         </div>
 

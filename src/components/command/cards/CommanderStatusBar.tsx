@@ -2,7 +2,19 @@ import { fleet } from "@/data/fleet";
 import { calculateReadiness } from "@/engine/calculateReadiness";
 
 export default function CommanderStatusBar() {
-  const results = fleet.map((ship) => calculateReadiness(ship));
+ const results = fleet.map((ship) => {
+  try {
+    return calculateReadiness(ship);
+  } catch (e) {
+    console.error(e);
+    return {
+      readiness: "N",
+      score: 0,
+      personnel: 0,
+      equipment: 0,
+    };
+  }
+});
 
   const ready = results.filter((r) => r.readiness === "Y").length;
   const limited = results.filter((r) => r.readiness === "Q").length;

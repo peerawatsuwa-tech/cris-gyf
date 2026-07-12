@@ -2,7 +2,6 @@ import {
   LayoutGrid,
   ShipWheel,
   BarChart3,
-  Settings,
   LogOut,
   ClipboardList,
 } from "lucide-react";
@@ -15,7 +14,7 @@ const navItems = [
   {
     label: UI.commandCenter,
     icon: LayoutGrid,
-     href: "/",
+    href: "/",
   },
   {
     label: UI.dashboard,
@@ -32,16 +31,6 @@ const navItems = [
     icon: ClipboardList,
     href: "/assessment",
   },
-  //{
-    label: UI.reports,
-    icon: BarChart3,
-    href: "/reports",
-  //},
-  //{
-    label: UI.settings,
-    icon: Settings,
-    href: "/settings",
-  //},
 ];
 
 export function Sidebar() {

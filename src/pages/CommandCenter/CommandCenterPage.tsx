@@ -4,12 +4,14 @@ import CommanderStatusBar from "@/components/command/cards/CommanderStatusBar";
 import CommanderExecutiveBrief from "@/components/command/cards/CommanderExecutiveBrief";
 import CommanderBrief from "@/components/command/cards/CommanderBrief";
 import CommandGrid from "@/components/command/layout/CommandGrid";
+import SecurityBanner from "@/components/common/SecurityBanner";
 
 export default function CommandCenterPage() {
   return (
     <MainLayout>
 
       <div className="space-y-6">
+        <SecurityBanner />
 
         <CommanderStatusBar />
 

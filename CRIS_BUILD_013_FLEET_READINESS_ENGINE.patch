@@ -1,0 +1,455 @@
+diff --git a/src/components/command/FleetHeatMap.tsx b/src/components/command/FleetHeatMap.tsx
+index 763d763..4a9e4b0 100644
+--- a/src/components/command/FleetHeatMap.tsx
++++ b/src/components/command/FleetHeatMap.tsx
+@@ -1,76 +1,42 @@
+-import { useFleet } from "@/context/FleetContext";
+-import { calculateReadiness } from "@/engine/calculateReadiness";
++import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
+ 
+ export default function FleetHeatMap() {
+-  const { fleet } = useFleet();
++  const { items } = useCommanderSnapshot();
+ 
+   return (
+     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+-
+-      <h3 className="text-xl font-bold text-white">
+-        Fleet Readiness
+-      </h3>
++      <h3 className="text-xl font-bold text-white">Fleet Readiness</h3>
+ 
+       <div className="mt-5 space-y-3">
+-
+-        {fleet.map((ship) => {
+-
+-          const result = calculateReadiness(ship);
+-
++        {items.map(({ ship, result }) => {
+           const color =
+             result.readiness === "Y"
+               ? "bg-emerald-500"
+               : result.readiness === "Q"
+-              ? "bg-yellow-500"
+-              : "bg-red-500";
++                ? "bg-yellow-500"
++                : "bg-red-500";
+ 
+           return (
+-
+             <div
+               key={ship.id}
+               className="flex items-center justify-between rounded-xl bg-slate-900 p-4"
+             >
+-
+               <div className="flex items-center gap-3">
+-
+-                <div
+-                  className={`h-3 w-3 rounded-full ${color}`}
+-                />
+-
++                <div className={`h-3 w-3 rounded-full ${color}`} />
+                 <div>
+-
+-                  <p className="font-semibold text-white">
+-                    {ship.shipName}
+-                  </p>
+-
+-                  <p className="text-sm text-slate-400">
+-                    {ship.hullNumber}
+-                  </p>
+-
++                  <p className="font-semibold text-white">{ship.shipName}</p>
++                  <p className="text-sm text-slate-400">{ship.hullNumber}</p>
+                 </div>
+-
+               </div>
+ 
+               <div className="text-right">
+-
+-                <p className="font-bold text-sky-400">
+-                  {result.score.toFixed(1)}%
+-                </p>
+-
+-                <p className="text-sm text-slate-400">
+-                  {result.readiness}
+-                </p>
+-
++                <p className="font-bold text-sky-400">{result.score.toFixed(1)}%</p>
++                <p className="text-sm text-slate-400">{result.readiness}</p>
+               </div>
+-
+             </div>
+-
+           );
+-
+         })}
+-
+       </div>
+-
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/command/FleetOverviewCard.tsx b/src/components/command/FleetOverviewCard.tsx
+index 25f4a84..ca0fd42 100644
+--- a/src/components/command/FleetOverviewCard.tsx
++++ b/src/components/command/FleetOverviewCard.tsx
+@@ -1,45 +1,19 @@
+-import { useFleet } from "@/context/FleetContext";
++import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
+ 
+ export default function FleetOverviewCard() {
+-  const { fleet } = useFleet();
+-
+-  const ready = fleet.filter((s) => s.readiness === "Y").length;
+-  const limited = fleet.filter((s) => s.readiness === "Q").length;
+-  const notReady = fleet.filter((s) => s.readiness === "N").length;
++  const { ready, limited, notReady } = useCommanderSnapshot();
+ 
+   return (
+     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
++      <h2 className="text-xl font-bold text-white">ภาพรวมกองเรือ</h2>
+ 
+-      <h2 className="text-xl font-bold text-white">
+-        ภาพรวมกองเรือ
+-      </h2>
+-
+-      <p className="text-sm text-slate-400">
+-        Fleet Readiness Summary
+-      </p>
++      <p className="text-sm text-slate-400">Fleet Readiness Summary</p>
+ 
+       <div className="mt-6 space-y-5">
+-
+-        <Row
+-          label="พร้อมปฏิบัติ"
+-          value={ready}
+-          color="text-emerald-400"
+-        />
+-
+-        <Row
+-          label="พร้อมบางส่วน"
+-          value={limited}
+-          color="text-yellow-400"
+-        />
+-
+-        <Row
+-          label="ไม่พร้อม"
+-          value={notReady}
+-          color="text-red-400"
+-        />
+-
++        <Row label="พร้อมปฏิบัติ" value={ready} color="text-emerald-400" />
++        <Row label="พร้อมบางส่วน" value={limited} color="text-yellow-400" />
++        <Row label="ไม่พร้อม" value={notReady} color="text-red-400" />
+       </div>
+-
+     </div>
+   );
+ }
+@@ -55,15 +29,8 @@ function Row({
+ }) {
+   return (
+     <div className="flex items-center justify-between">
+-
+-      <span className="text-slate-300">
+-        {label}
+-      </span>
+-
+-      <span className={`text-xl font-bold ${color}`}>
+-        {value} ลำ
+-      </span>
+-
++      <span className="text-slate-300">{label}</span>
++      <span className={`text-xl font-bold ${color}`}>{value} ลำ</span>
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/command/PriorityFleetCard.tsx b/src/components/command/PriorityFleetCard.tsx
+index bd1b1a9..8204fcf 100644
+--- a/src/components/command/PriorityFleetCard.tsx
++++ b/src/components/command/PriorityFleetCard.tsx
+@@ -1,67 +1,32 @@
+-import { useFleet } from "@/context/FleetContext";
+-import { calculateReadiness } from "@/engine/calculateReadiness";
++import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
+ 
+ export default function PriorityFleetCard() {
+-  const { fleet } = useFleet();
+-
+-  const ships = fleet
+-    .map((ship) => ({
+-      ship,
+-      result: calculateReadiness(ship),
+-    }))
+-    .sort((a, b) => a.result.score - b.result.score);
++  const { items } = useCommanderSnapshot();
++  const ships = [...items].sort((a, b) => a.result.score - b.result.score);
+ 
+   return (
+     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+-
+-      <h2 className="text-xl font-bold text-white">
+-
+-        Top Priority Ships
+-
+-      </h2>
++      <h2 className="text-xl font-bold text-white">Top Priority Ships</h2>
+ 
+       <div className="mt-5 space-y-4">
+-
+-        {ships.slice(0,5).map((item,index)=>(
+-
++        {ships.slice(0, 5).map((item, index) => (
+           <div
+             key={item.ship.id}
+             className="flex items-center justify-between rounded-xl bg-slate-900 p-4"
+           >
+-
+             <div>
+-
+-              <p className="text-white font-semibold">
+-
+-                #{index+1} {item.ship.shipName}
+-
++              <p className="font-semibold text-white">
++                #{index + 1} {item.ship.shipName}
+               </p>
+-
+-              <p className="text-slate-400 text-sm">
+-
+-                {item.ship.hullNumber}
+-
+-              </p>
+-
++              <p className="text-sm text-slate-400">{item.ship.hullNumber}</p>
+             </div>
+ 
+             <div className="text-right">
+-
+-              <p className="text-sky-400 font-bold">
+-
+-                {item.result.score.toFixed(1)}%
+-
+-              </p>
+-
++              <p className="font-bold text-sky-400">{item.result.score.toFixed(1)}%</p>
+             </div>
+-
+           </div>
+-
+         ))}
+-
+       </div>
+-
+     </div>
+   );
+-
+-}
+\ No newline at end of file
++}
+diff --git a/src/engine/calculateReadiness.ts b/src/engine/calculateReadiness.ts
+index 267deff..e4768dc 100644
+--- a/src/engine/calculateReadiness.ts
++++ b/src/engine/calculateReadiness.ts
+@@ -1,39 +1,45 @@
+-import { WEIGHTS } from './weights';
+-import { equipmentScore } from './helpers';
+-import { getReadiness } from './readiness';
++import { WEIGHTS } from "./weights";
++import { equipmentScore } from "./helpers";
++import { getReadiness } from "./readiness";
+ import type { Ship } from "@/types/ship";
+ 
+-export function calculateReadiness(ship:Ship) {
+-  const crew = (ship.crew / ship.authorizedCrew) * 100;
+-
+-  const score =
+-    crew * (WEIGHTS.crew / 100) +
+-    equipmentScore(ship.equipment.radar) * (WEIGHTS.radar / 100) +
+-    equipmentScore(ship.equipment.communication) * (WEIGHTS.communication / 100) +
+-    equipmentScore(ship.equipment.weapon) * (WEIGHTS.weapon / 100) +
+-    equipmentScore(ship.equipment.navigation) * (WEIGHTS.navigation / 100) +
+-    equipmentScore(ship.equipment.eoir) * (WEIGHTS.eoir / 100) +
+-    equipmentScore(ship.equipment.rhib) * (WEIGHTS.rhib / 100);
++function clampScore(value: number): number {
++  if (!Number.isFinite(value)) return 0;
++  return Math.min(100, Math.max(0, value));
++}
+ 
+-    const equipment =
+-(
+-  equipmentScore(ship.equipment.radar) +
+-  equipmentScore(ship.equipment.communication) +
+-  equipmentScore(ship.equipment.weapon) +
+-  equipmentScore(ship.equipment.navigation) +
+-  equipmentScore(ship.equipment.eoir) +
+-  equipmentScore(ship.equipment.rhib)
+-) / 6;
++export function calculateReadiness(ship: Ship) {
++  const personnel = clampScore(
++    ship.authorizedCrew > 0 ? (ship.crew / ship.authorizedCrew) * 100 : 0,
++  );
++
++  const equipmentScores = [
++    equipmentScore(ship.equipment.radar),
++    equipmentScore(ship.equipment.communication),
++    equipmentScore(ship.equipment.weapon),
++    equipmentScore(ship.equipment.navigation),
++    equipmentScore(ship.equipment.eoir),
++    equipmentScore(ship.equipment.rhib),
++  ];
++
++  const score = clampScore(
++    personnel * (WEIGHTS.crew / 100) +
++      equipmentScores[0] * (WEIGHTS.radar / 100) +
++      equipmentScores[1] * (WEIGHTS.communication / 100) +
++      equipmentScores[2] * (WEIGHTS.weapon / 100) +
++      equipmentScores[3] * (WEIGHTS.navigation / 100) +
++      equipmentScores[4] * (WEIGHTS.eoir / 100) +
++      equipmentScores[5] * (WEIGHTS.rhib / 100),
++  );
++
++  const equipment =
++    equipmentScores.reduce((sum, value) => sum + value, 0) /
++    equipmentScores.length;
+ 
+   return {
+-
+     score: Number(score.toFixed(1)),
+-
+     readiness: getReadiness(score),
+-
+-    personnel: Number(crew.toFixed(1)),
+-
++    personnel: Number(personnel.toFixed(1)),
+     equipment: Number(equipment.toFixed(1)),
+-
+-}
++  };
+ }
+diff --git a/src/engine/fleetReadinessEngine.ts b/src/engine/fleetReadinessEngine.ts
+new file mode 100644
+index 0000000..58648e2
+--- /dev/null
++++ b/src/engine/fleetReadinessEngine.ts
+@@ -0,0 +1,71 @@
++import { calculateReadiness } from "./calculateReadiness";
++import type { Ship, ReadinessLevel } from "@/types/ship";
++
++export type ShipReadinessResult = ReturnType<typeof calculateReadiness>;
++
++export interface FleetReadinessItem {
++  ship: Ship;
++  result: ShipReadinessResult;
++}
++
++export interface FleetReadinessSummary {
++  items: FleetReadinessItem[];
++  ready: number;
++  limited: number;
++  notReady: number;
++  total: number;
++  average: number;
++  averagePersonnel: number;
++  averageEquipment: number;
++  fleetReadiness: ReadinessLevel;
++}
++
++const EMPTY_RESULT: ShipReadinessResult = {
++  readiness: "N",
++  score: 0,
++  personnel: 0,
++  equipment: 0,
++};
++
++function safeCalculateReadiness(ship: Ship): ShipReadinessResult {
++  try {
++    return calculateReadiness(ship);
++  } catch (error) {
++    console.error(`Unable to calculate readiness for ${ship.shipName}`, error);
++    return EMPTY_RESULT;
++  }
++}
++
++function average(values: number[]): number {
++  if (values.length === 0) return 0;
++
++  return Number(
++    (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1),
++  );
++}
++
++export function evaluateFleetReadiness(fleet: Ship[]): FleetReadinessSummary {
++  const items = fleet.map((ship) => ({
++    ship,
++    result: safeCalculateReadiness(ship),
++  }));
++
++  const ready = items.filter(({ result }) => result.readiness === "Y").length;
++  const limited = items.filter(({ result }) => result.readiness === "Q").length;
++  const notReady = items.filter(({ result }) => result.readiness === "N").length;
++
++  const averageScore = average(items.map(({ result }) => result.score));
++
++  return {
++    items,
++    ready,
++    limited,
++    notReady,
++    total: items.length,
++    average: averageScore,
++    averagePersonnel: average(items.map(({ result }) => result.personnel)),
++    averageEquipment: average(items.map(({ result }) => result.equipment)),
++    fleetReadiness:
++      averageScore >= 85 ? "Y" : averageScore >= 70 ? "Q" : "N",
++  };
++}
+diff --git a/src/hooks/useCommanderSnapshot.ts b/src/hooks/useCommanderSnapshot.ts
+index 2e72814..89a6476 100644
+--- a/src/hooks/useCommanderSnapshot.ts
++++ b/src/hooks/useCommanderSnapshot.ts
+@@ -1,36 +1,9 @@
++import { useMemo } from "react";
+ import { useFleet } from "@/context/FleetContext";
+-import { calculateReadiness } from "@/engine/calculateReadiness";
++import { evaluateFleetReadiness } from "@/engine/fleetReadinessEngine";
+ 
+ export function useCommanderSnapshot() {
+   const { fleet } = useFleet();
+ 
+-  const results = fleet.map((ship) => {
+-    try {
+-      return calculateReadiness(ship);
+-    } catch (error) {
+-      console.error(`Unable to calculate readiness for ${ship.shipName}`, error);
+-      return {
+-        readiness: "N" as const,
+-        score: 0,
+-        personnel: 0,
+-        equipment: 0,
+-      };
+-    }
+-  });
+-
+-  const ready = results.filter((result) => result.readiness === "Y").length;
+-  const limited = results.filter((result) => result.readiness === "Q").length;
+-  const notReady = results.filter((result) => result.readiness === "N").length;
+-  const total = results.length;
+-  const average = total > 0
+-    ? results.reduce((sum, result) => sum + result.score, 0) / total
+-    : 0;
+-
+-  return {
+-    ready,
+-    limited,
+-    notReady,
+-    total,
+-    average,
+-  };
++  return useMemo(() => evaluateFleetReadiness(fleet), [fleet]);
+ }

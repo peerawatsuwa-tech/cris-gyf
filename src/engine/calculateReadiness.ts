@@ -1,39 +1,45 @@
-import { WEIGHTS } from './weights';
-import { equipmentScore } from './helpers';
-import { getReadiness } from './readiness';
+import { WEIGHTS } from "./weights";
+import { equipmentScore } from "./helpers";
+import { getReadiness } from "./readiness";
 import type { Ship } from "@/types/ship";
 
-export function calculateReadiness(ship:Ship) {
-  const crew = (ship.crew / ship.authorizedCrew) * 100;
+function clampScore(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(100, Math.max(0, value));
+}
 
-  const score =
-    crew * (WEIGHTS.crew / 100) +
-    equipmentScore(ship.equipment.radar) * (WEIGHTS.radar / 100) +
-    equipmentScore(ship.equipment.communication) * (WEIGHTS.communication / 100) +
-    equipmentScore(ship.equipment.weapon) * (WEIGHTS.weapon / 100) +
-    equipmentScore(ship.equipment.navigation) * (WEIGHTS.navigation / 100) +
-    equipmentScore(ship.equipment.eoir) * (WEIGHTS.eoir / 100) +
-    equipmentScore(ship.equipment.rhib) * (WEIGHTS.rhib / 100);
+export function calculateReadiness(ship: Ship) {
+  const personnel = clampScore(
+    ship.authorizedCrew > 0 ? (ship.crew / ship.authorizedCrew) * 100 : 0,
+  );
 
-    const equipment =
-(
-  equipmentScore(ship.equipment.radar) +
-  equipmentScore(ship.equipment.communication) +
-  equipmentScore(ship.equipment.weapon) +
-  equipmentScore(ship.equipment.navigation) +
-  equipmentScore(ship.equipment.eoir) +
-  equipmentScore(ship.equipment.rhib)
-) / 6;
+  const equipmentScores = [
+    equipmentScore(ship.equipment.radar),
+    equipmentScore(ship.equipment.communication),
+    equipmentScore(ship.equipment.weapon),
+    equipmentScore(ship.equipment.navigation),
+    equipmentScore(ship.equipment.eoir),
+    equipmentScore(ship.equipment.rhib),
+  ];
+
+  const score = clampScore(
+    personnel * (WEIGHTS.crew / 100) +
+      equipmentScores[0] * (WEIGHTS.radar / 100) +
+      equipmentScores[1] * (WEIGHTS.communication / 100) +
+      equipmentScores[2] * (WEIGHTS.weapon / 100) +
+      equipmentScores[3] * (WEIGHTS.navigation / 100) +
+      equipmentScores[4] * (WEIGHTS.eoir / 100) +
+      equipmentScores[5] * (WEIGHTS.rhib / 100),
+  );
+
+  const equipment =
+    equipmentScores.reduce((sum, value) => sum + value, 0) /
+    equipmentScores.length;
 
   return {
-
     score: Number(score.toFixed(1)),
-
     readiness: getReadiness(score),
-
-    personnel: Number(crew.toFixed(1)),
-
+    personnel: Number(personnel.toFixed(1)),
     equipment: Number(equipment.toFixed(1)),
-
-}
+  };
 }

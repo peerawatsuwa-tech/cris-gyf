@@ -5,6 +5,7 @@ import CommanderExecutiveBrief from "@/components/command/cards/CommanderExecuti
 import CommanderBrief from "@/components/command/cards/CommanderBrief";
 import CommandGrid from "@/components/command/layout/CommandGrid";
 import SecurityBanner from "@/components/common/SecurityBanner";
+import OperationalMap from "@/components/command/OperationalMap";
 
 export default function CommandCenterPage() {
   return (
@@ -12,6 +13,8 @@ export default function CommandCenterPage() {
 
       <div className="space-y-6">
         <SecurityBanner />
+
+        <OperationalMap />
 
         <CommanderStatusBar />
 

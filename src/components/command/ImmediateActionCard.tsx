@@ -1,7 +1,8 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 import { calculateActions } from "@/engine/actionEngine";
 
 export default function ImmediateActionCard() {
+  const { fleet } = useFleet();
 
   const actions = fleet.flatMap(ship =>
     calculateActions(ship)

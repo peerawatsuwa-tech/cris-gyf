@@ -1,7 +1,8 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 import { calculateReadiness } from "@/engine/calculateReadiness";
 
 export default function FleetHeatMap() {
+  const { fleet } = useFleet();
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">

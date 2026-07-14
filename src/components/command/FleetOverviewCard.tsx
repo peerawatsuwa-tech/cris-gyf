@@ -1,6 +1,7 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 
 export default function FleetOverviewCard() {
+  const { fleet } = useFleet();
 
   const ready = fleet.filter((s) => s.readiness === "Y").length;
   const limited = fleet.filter((s) => s.readiness === "Q").length;

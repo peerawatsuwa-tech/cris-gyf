@@ -1,24 +1,7 @@
-import { fleet } from "@/data/fleet";
-import { calculateReadiness } from "@/engine/calculateReadiness";
+import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
 
 export default function CommanderExecutiveBrief() {
-
-  const result = fleet.map(calculateReadiness);
-
-  const ready =
-    result.filter(r => r.readiness === "Y").length;
-
-  const limited =
-    result.filter(r => r.readiness === "Q").length;
-
-  const notReady =
-    result.filter(r => r.readiness === "N").length;
-
-  const average =
-    result.reduce(
-      (sum, r) => sum + r.score,
-      0
-    ) / result.length;
+  const { ready, limited, notReady, average } = useCommanderSnapshot();
 
   return (
 

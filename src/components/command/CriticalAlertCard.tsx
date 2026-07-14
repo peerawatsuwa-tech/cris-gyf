@@ -1,7 +1,8 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 import { calculateAlerts } from "@/engine/alertEngine";
 
 export default function CriticalAlertCard() {
+  const { fleet } = useFleet();
 
   const alerts = fleet.flatMap(ship =>
     calculateAlerts(ship)

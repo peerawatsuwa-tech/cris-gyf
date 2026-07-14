@@ -1,7 +1,8 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 import { calculateReadiness } from "@/engine/calculateReadiness";
 
 export default function PriorityFleetCard() {
+  const { fleet } = useFleet();
 
   const ships = fleet
     .map((ship) => ({

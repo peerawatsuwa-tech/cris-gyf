@@ -1,4 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
+import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
 
 import SecurityBanner from "@/components/common/SecurityBanner";
 import OperationalMap from "@/components/command/OperationalMap";
@@ -10,6 +11,8 @@ import CommanderBrief from "@/components/command/cards/CommanderBrief";
 import CommandGrid from "@/components/command/layout/CommandGrid";
 
 export default function CommandCenterPage() {
+  const { average, total } = useCommanderSnapshot();
+
   return (
     <MainLayout>
       <div className="mx-auto max-w-[1800px] space-y-6">
@@ -48,11 +51,11 @@ export default function CommandCenterPage() {
               <div className="mt-2 flex items-end gap-3">
 
                 <span className="text-5xl font-bold text-emerald-400">
-                  96%
+                  {average.toFixed(1)}%
                 </span>
 
                 <span className="pb-2 text-slate-400">
-                  ระดับความพร้อม
+                  ระดับความพร้อม · {total} ลำ
                 </span>
 
               </div>

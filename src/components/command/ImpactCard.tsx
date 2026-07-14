@@ -1,7 +1,8 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 import { calculateImpact } from "@/engine/impactEngine";
 
 export default function ImpactCard() {
+  const { fleet } = useFleet();
 
   const impacts = fleet.flatMap(ship =>
     calculateImpact(ship)

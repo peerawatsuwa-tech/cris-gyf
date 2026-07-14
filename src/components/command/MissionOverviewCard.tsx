@@ -1,7 +1,8 @@
-import { fleet } from "@/data/fleet";
+import { useFleet } from "@/context/FleetContext";
 import { calculateMission } from "@/engine/MissionEngine";
 
 export default function MissionOverviewCard() {
+  const { fleet } = useFleet();
 
   const all = fleet.flatMap((ship) => calculateMission(ship));
 

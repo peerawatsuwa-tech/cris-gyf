@@ -1,34 +1,7 @@
-import { fleet } from "@/data/fleet";
-import { calculateReadiness } from "@/engine/calculateReadiness";
+import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
 
 export default function CommanderBrief() {
-
-  const assessments =
-    fleet.map((ship) => ({
-      ship,
-      result: calculateReadiness(ship),
-    }));
-
-  const ready =
-    assessments.filter(
-      (a) => a.result.readiness === "Y"
-    ).length;
-
-  const limited =
-    assessments.filter(
-      (a) => a.result.readiness === "Q"
-    ).length;
-
-  const notReady =
-    assessments.filter(
-      (a) => a.result.readiness === "N"
-    ).length;
-
-  const avg =
-    assessments.reduce(
-      (sum, a) => sum + a.result.score,
-      0
-    ) / assessments.length;
+  const { ready, limited, notReady, average } = useCommanderSnapshot();
 
   return (
 
@@ -58,7 +31,7 @@ export default function CommanderBrief() {
         โดยมีคะแนนความพร้อมเฉลี่ย
 
         <span className="font-bold text-sky-400">
-          {" "}{avg.toFixed(1)}%
+          {" "}{average.toFixed(1)}%
         </span>
 
       </p>

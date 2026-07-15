@@ -5,10 +5,13 @@ import CriticalAlertCard from "../CriticalAlertCard";
 import ImpactCard from "../ImpactCard";
 import PriorityFleetCard from "../PriorityFleetCard";
 import ImmediateActionCard from "../ImmediateActionCard";
+import FleetIntelligenceCard from "../FleetIntelligenceCard";
 
 export default function CommandGrid() {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
+
+      <FleetIntelligenceCard />
 
       <FleetOverviewCard />
 

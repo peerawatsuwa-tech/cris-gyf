@@ -1,4 +1,8 @@
 import type { Ship } from "@/types/ship";
+import {
+  isRequirementMet,
+  missionCapabilityFramework,
+} from "./missionCapabilityFramework";
 
 export interface MissionResult {
   mission: string;
@@ -7,127 +11,30 @@ export interface MissionResult {
   reasons: string[];
 }
 
+function toReadiness(score: number): MissionResult["readiness"] {
+  return score >= 90 ? "Y" : score >= 70 ? "Q" : "N";
+}
+
 export function calculateMission(ship: Ship): MissionResult[] {
+  return missionCapabilityFramework.map((mission) => {
+    const unmetRequirements = mission.requirements.filter(
+      (requirement) => !isRequirementMet(ship, requirement),
+    );
 
-  const results: MissionResult[] = [];
+    const score = Math.max(
+      0,
+      100 -
+        unmetRequirements.reduce(
+          (totalPenalty, requirement) => totalPenalty + requirement.penalty,
+          0,
+        ),
+    );
 
-  // ------------------------
-  // Maritime Presence
-  // ------------------------
-
-  {
-    let score = 100;
-    const reasons: string[] = [];
-
-    if (ship.crew / ship.authorizedCrew < 0.9) {
-      score -= 20;
-      reasons.push("Personnel below 90%");
-    }
-
-    if (ship.equipment.radar !== "Operational") {
-      score -= 40;
-      reasons.push("Radar unavailable");
-    }
-
-    if (ship.equipment.communication !== "Operational") {
-      score -= 40;
-      reasons.push("Communication unavailable");
-    }
-
-    results.push({
-      mission: "Maritime Presence",
-      readiness:
-        score >= 90
-          ? "Y"
-          : score >= 70
-          ? "Q"
-          : "N",
+    return {
+      mission: mission.name,
+      readiness: toReadiness(score),
       score,
-      reasons,
-    });
-  }
-
-  // ------------------------
-  // Maritime Law Enforcement
-  // ------------------------
-
-  {
-    let score = 100;
-    const reasons: string[] = [];
-
-    if (ship.crew / ship.authorizedCrew < 0.9) {
-      score -= 20;
-      reasons.push("Personnel below 90%");
-    }
-
-    if (ship.equipment.weapon !== "Operational") {
-      score -= 30;
-      reasons.push("Weapon unavailable");
-    }
-
-    if (ship.equipment.rhib !== "Operational") {
-      score -= 30;
-      reasons.push("RHIB unavailable");
-    }
-
-    if (ship.equipment.communication !== "Operational") {
-      score -= 20;
-      reasons.push("Communication unavailable");
-    }
-
-    results.push({
-      mission: "Maritime Law Enforcement",
-      readiness:
-        score >= 90
-          ? "Y"
-          : score >= 70
-          ? "Q"
-          : "N",
-      score,
-      reasons,
-    });
-  }
-
-  // ------------------------
-  // Search and Rescue
-  // ------------------------
-
-  {
-    let score = 100;
-    const reasons: string[] = [];
-
-    if (ship.crew / ship.authorizedCrew < 0.8) {
-      score -= 20;
-      reasons.push("Personnel below 80%");
-    }
-
-    if (ship.equipment.navigation !== "Operational") {
-      score -= 30;
-      reasons.push("Navigation unavailable");
-    }
-
-    if (ship.equipment.communication !== "Operational") {
-      score -= 20;
-      reasons.push("Communication unavailable");
-    }
-
-    if (ship.equipment.rhib !== "Operational") {
-      score -= 30;
-      reasons.push("RHIB unavailable");
-    }
-
-    results.push({
-      mission: "Search and Rescue",
-      readiness:
-        score >= 90
-          ? "Y"
-          : score >= 70
-          ? "Q"
-          : "N",
-      score,
-      reasons,
-    });
-  }
-
-  return results;
+      reasons: unmetRequirements.map((requirement) => requirement.reason),
+    };
+  });
 }

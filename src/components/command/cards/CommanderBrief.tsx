@@ -18,7 +18,7 @@ export default function CommanderBrief() {
           {" "}พร้อมปฏิบัติ {ready} ลำ
         </span>
 
-        {" "}พร้อมบางส่วน
+        {" "}พร้อมแบบมีข้อจำกัด
         <span className="font-bold text-yellow-400">
           {" "}{limited} ลำ
         </span>
@@ -48,7 +48,7 @@ export default function CommanderBrief() {
 
           <li>• เร่งแก้ไขเรือที่มีสถานะ "ไม่พร้อมปฏิบัติ"</li>
 
-          <li>• ติดตามการซ่อมระบบสำคัญ เช่น Radar, RHIB และระบบสื่อสาร</li>
+          <li>• ติดตามการซ่อมระบบสำคัญ เช่น เรดาร์ RHIB และระบบสื่อสาร</li>
 
           <li>• พิจารณาเสริมกำลังพลในเรือที่มีอัตรากำลังต่ำกว่าเกณฑ์</li>
 

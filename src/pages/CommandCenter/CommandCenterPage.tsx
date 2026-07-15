@@ -3,6 +3,7 @@ import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
 
 import SecurityBanner from "@/components/common/SecurityBanner";
 import OperationalMap from "@/components/command/OperationalMap";
+import CommanderCOPPanel from "@/components/command/CommanderCOPPanel";
 
 import CommanderStatusBar from "@/components/command/cards/CommanderStatusBar";
 import CommanderExecutiveBrief from "@/components/command/cards/CommanderExecutiveBrief";
@@ -32,7 +33,7 @@ export default function CommandCenterPage() {
               </p>
 
               <h1 className="mt-2 text-3xl font-bold text-white">
-                ศูนย์บัญชาการความพร้อมรบ
+                ภาพรวมสถานการณ์สำหรับผู้บังคับบัญชา
               </h1>
 
               <p className="mt-3 max-w-3xl text-slate-300">
@@ -65,6 +66,9 @@ export default function CommandCenterPage() {
           </div>
 
         </section>
+
+        {/* ภาพรวมสถานการณ์ร่วม */}
+        <CommanderCOPPanel />
 
         {/* แผนที่ */}
         <OperationalMap />

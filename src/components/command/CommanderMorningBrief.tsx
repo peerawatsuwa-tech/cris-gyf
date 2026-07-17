@@ -11,6 +11,7 @@ import {
 import { useMemo } from "react";
 import { useFleet } from "@/context/FleetContext";
 import { buildCommanderIntelligence } from "@/engine/commanderIntelligenceEngine";
+import { useCommanderDecisionsV2 } from "@/hooks/useCommanderDecisionsV2";
 import { useCommanderSnapshot } from "@/hooks/useCommanderSnapshot";
 
 function getThaiDateTime() {
@@ -24,13 +25,14 @@ function getThaiDateTime() {
 export default function CommanderMorningBrief() {
   const { fleet } = useFleet();
   const snapshot = useCommanderSnapshot();
+  const decisions = useCommanderDecisionsV2();
 
   const intelligence = useMemo(
     () => buildCommanderIntelligence(fleet),
     [fleet],
   );
 
-  const topAction = intelligence.recoveryActions[0];
+  const topAction = decisions.topAction;
   const criticalShips = intelligence.fleetRisks
     .filter((item) => item.riskLevel === "วิกฤต")
     .slice(0, 4);
@@ -41,7 +43,7 @@ export default function CommanderMorningBrief() {
 
   const expectedReadiness = Math.min(
     100,
-    Math.round(snapshot.average + (topAction?.fleetGain ?? 0)),
+    Math.round(snapshot.average + (topAction?.estimatedFleetGain ?? 0)),
   );
 
   return (
@@ -90,7 +92,7 @@ export default function CommanderMorningBrief() {
           </p>
 
           <div className="mt-2 flex items-center gap-2 text-xs text-emerald-300">
-            <span>Fleet +{topAction?.fleetGain ?? 0}%</span>
+            <span>Fleet +{topAction?.estimatedFleetGain ?? 0}%</span>
             <ArrowRight className="h-3.5 w-3.5" />
             <span>{topAction?.affectedShips ?? 0} ลำ</span>
           </div>

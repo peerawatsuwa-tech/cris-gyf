@@ -3,7 +3,7 @@ import SecurityBanner from "@/components/common/SecurityBanner";
 import OperationalMap from "@/components/command/OperationalMap";
 import CommanderMorningBrief from "@/components/command/CommanderMorningBrief";
 import MissionCapabilityPanel from "@/components/command/MissionCapabilityPanel";
-import CommanderIntelligencePanel from "@/components/command/CommanderIntelligencePanel";
+import CommanderDecisionV2Panel from "@/components/command/CommanderDecisionV2Panel";
 import FleetSnapshot from "@/components/command/FleetSnapshot";
 
 export default function CommandCenterPage() {
@@ -16,7 +16,7 @@ export default function CommandCenterPage() {
 
         <MissionCapabilityPanel />
 
-        <CommanderIntelligencePanel />
+        <CommanderDecisionV2Panel />
 
         <FleetSnapshot />
 

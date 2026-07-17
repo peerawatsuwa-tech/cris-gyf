@@ -141,10 +141,12 @@ function buildActions(
         ? "crew:below-90"
         : `equipment:${recovery.id}`;
     const constraint = constraints.find((item) => item.id === constraintId);
-    const estimatedFleetGain = clamp(
-      recovery.fleetGain,
-      0,
-      Math.max(0, 100 - readiness.average),
+    const estimatedFleetGain = Math.round(
+      clamp(
+        recovery.fleetGain,
+        0,
+        Math.max(0, 100 - readiness.average),
+      ),
     );
     const affectedShips = constraint?.affectedShipIds.length ?? 0;
     const decisionScore = clamp(

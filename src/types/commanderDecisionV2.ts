@@ -48,3 +48,25 @@ export interface CommanderDecisionV2Snapshot {
   topAction: RankedCommanderAction | null;
   executiveSummary: string;
 }
+
+export interface DecisionSimulationMetric {
+  id: string;
+  label: string;
+  before: number;
+  after: number;
+  unit: "%" | "คะแนน";
+}
+
+export interface CommanderDecisionSimulation {
+  actionId: string;
+  actionTitle: string;
+  simulatedAt: string;
+  fleetReadinessBefore: number;
+  fleetReadinessAfter: number;
+  riskBefore: number;
+  riskAfter: number;
+  affectedShips: number;
+  metrics: DecisionSimulationMetric[];
+  assumptions: string[];
+  summary: string;
+}

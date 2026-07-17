@@ -1,6 +1,7 @@
 import { buildCommanderIntelligence } from "@/engine/commanderIntelligenceEngine";
 import { evaluateFleetReadiness } from "@/engine/fleetReadinessEngine";
 import type {
+  CommanderDecisionSimulation,
   CommanderDecisionV2Snapshot,
   DecisionConstraint,
   DecisionPriority,
@@ -222,5 +223,67 @@ export function evaluateCommanderDecisionsV2(
     executiveSummary: topAction
       ? `ข้อเสนออันดับแรกคือ ${topAction.title} เนื่องจากเกี่ยวข้องกับเรือ ${topAction.affectedShips} ลำ และคาดว่าจะเพิ่มความพร้อมกองเรือประมาณ ${topAction.estimatedFleetGain}%`
       : "ไม่พบข้อจำกัดที่ต้องเสนอเพื่อการสั่งการ ให้รักษาระดับความพร้อมและติดตามสถานการณ์ต่อเนื่อง",
+  };
+}
+
+export function simulateCommanderActionV2(
+  snapshot: CommanderDecisionV2Snapshot,
+  actionId: string,
+): CommanderDecisionSimulation | null {
+  const action = snapshot.actions.find((item) => item.id === actionId);
+  if (!action) return null;
+
+  const riskBefore = clamp(
+    Math.round(
+      snapshot.constraints.reduce(
+        (highest, constraint) => Math.max(highest, constraint.severity),
+        0,
+      ),
+    ),
+  );
+  const confidenceFactor = action.confidence / 100;
+  const riskReduction = Math.round(
+    Math.min(riskBefore, action.estimatedFleetGain * 5 * confidenceFactor),
+  );
+  const riskAfter = clamp(riskBefore - riskReduction);
+
+  return {
+    actionId: action.id,
+    actionTitle: action.title,
+    simulatedAt: new Date().toISOString(),
+    fleetReadinessBefore: snapshot.fleetReadiness,
+    fleetReadinessAfter: action.projectedFleetReadiness,
+    riskBefore,
+    riskAfter,
+    affectedShips: action.affectedShips,
+    metrics: [
+      {
+        id: "fleet-readiness",
+        label: "ความพร้อมกองเรือ",
+        before: snapshot.fleetReadiness,
+        after: action.projectedFleetReadiness,
+        unit: "%",
+      },
+      ...action.missionImpact.map((impact) => ({
+        id: impact.missionId,
+        label: `${impact.missionId} ${impact.missionName}`,
+        before: impact.currentScore,
+        after: impact.projectedScore,
+        unit: "%" as const,
+      })),
+      {
+        id: "operational-risk",
+        label: "ความเสี่ยงทางปฏิบัติการ",
+        before: riskBefore,
+        after: riskAfter,
+        unit: "คะแนน",
+      },
+    ],
+    assumptions: [
+      "ดำเนินการได้ครบตามขอบเขตของข้อเสนอ",
+      `ข้อมูลเรือที่ได้รับผลกระทบ ${action.affectedShips} ลำไม่เปลี่ยนแปลงระหว่างดำเนินการ`,
+      `ค่าประมาณมีระดับความเชื่อมั่น ${action.confidence}%`,
+    ],
+    summary: `หากดำเนินการ ${action.title} คาดว่าความพร้อมกองเรือจะเปลี่ยนจาก ${snapshot.fleetReadiness}% เป็น ${action.projectedFleetReadiness}% และความเสี่ยงลดจาก ${riskBefore} เป็น ${riskAfter} คะแนน`,
   };
 }

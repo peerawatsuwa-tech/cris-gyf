@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   ArrowRight,
+  Beaker,
   BrainCircuit,
   CheckCircle2,
   ChevronDown,
@@ -9,9 +10,11 @@ import {
   ShieldAlert,
   Ship,
   Target,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCommanderDecisionsV2 } from "@/hooks/useCommanderDecisionsV2";
+import { simulateCommanderActionV2 } from "@/engine/commanderDecisionEngineV2";
 import type {
   DecisionPriority,
   RankedCommanderAction,
@@ -40,6 +43,12 @@ export default function CommanderDecisionV2Panel() {
   const [expandedActionId, setExpandedActionId] = useState<string | null>(
     snapshot.topAction?.id ?? null,
   );
+  const [simulationActionId, setSimulationActionId] = useState<string | null>(
+    null,
+  );
+  const simulation = simulationActionId
+    ? simulateCommanderActionV2(snapshot, simulationActionId)
+    : null;
 
   useEffect(() => {
     if (
@@ -109,6 +118,15 @@ export default function CommanderDecisionV2Panel() {
                   current === action.id ? null : action.id,
                 )
               }
+              simulation={
+                simulationActionId === action.id ? simulation : null
+              }
+              onSimulate={() =>
+                setSimulationActionId((current) =>
+                  current === action.id ? null : action.id,
+                )
+              }
+              onCloseSimulation={() => setSimulationActionId(null)}
             />
           ))}
         </div>
@@ -131,20 +149,22 @@ function DecisionRow({
   action,
   expanded,
   onToggle,
+  onSimulate,
+  simulation,
+  onCloseSimulation,
 }: {
   action: RankedCommanderAction;
   expanded: boolean;
   onToggle: () => void;
+  onSimulate: () => void;
+  simulation: import("@/types/commanderDecisionV2").CommanderDecisionSimulation | null;
+  onCloseSimulation: () => void;
 }) {
   const meta = priorityMeta[action.priority];
 
   return (
     <article>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="grid w-full gap-4 px-6 py-4 text-left transition hover:bg-slate-900/50 md:grid-cols-[auto,1fr,auto,auto] md:items-center"
-      >
+      <div className="grid w-full gap-4 px-6 py-4 text-left transition hover:bg-slate-900/50 md:grid-cols-[auto,1fr,auto,auto,auto] md:items-center">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 text-lg font-black text-slate-950">
           {action.rank}
         </div>
@@ -181,12 +201,28 @@ function DecisionRow({
           </div>
         </div>
 
-        <ChevronDown
-          className={`h-5 w-5 text-slate-400 transition ${
-            expanded ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+        <button
+          type="button"
+          onClick={onSimulate}
+          className="flex items-center justify-center gap-2 rounded-lg border border-sky-500/40 bg-sky-950/30 px-3 py-2 text-xs font-bold text-sky-300 transition hover:bg-sky-900/50"
+        >
+          <Beaker className="h-4 w-4" />
+          จำลองผล
+        </button>
+
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={expanded ? "ปิดรายละเอียด" : "เปิดรายละเอียด"}
+          className="rounded-lg p-2 transition hover:bg-slate-800"
+        >
+          <ChevronDown
+            className={`h-5 w-5 text-slate-400 transition ${
+              expanded ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
 
       {expanded && (
         <div className="grid gap-4 border-t border-slate-800 bg-slate-950/25 px-6 py-5 xl:grid-cols-[1.15fr,1.35fr,1fr]">
@@ -257,7 +293,88 @@ function DecisionRow({
           </div>
         </div>
       )}
+
+      {simulation && (
+        <SimulationPanel
+          simulation={simulation}
+          onClose={onCloseSimulation}
+        />
+      )}
     </article>
+  );
+}
+
+function SimulationPanel({
+  simulation,
+  onClose,
+}: {
+  simulation: import("@/types/commanderDecisionV2").CommanderDecisionSimulation;
+  onClose: () => void;
+}) {
+  return (
+    <div className="border-t border-cyan-500/40 bg-cyan-950/20 px-6 py-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-black tracking-[0.2em] text-cyan-300">
+            <Beaker className="h-4 w-4" />
+            WHAT-IF SIMULATION
+          </div>
+          <h3 className="mt-2 text-xl font-black text-white">
+            {simulation.actionTitle}
+          </h3>
+          <p className="mt-2 max-w-4xl text-sm text-slate-300">
+            {simulation.summary}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="ปิดผลจำลอง"
+          className="rounded-lg border border-slate-700 p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
+        {simulation.metrics.map((metric) => {
+          const improved = metric.id === "operational-risk"
+            ? metric.after < metric.before
+            : metric.after > metric.before;
+          return (
+            <div
+              key={metric.id}
+              className="rounded-xl border border-slate-700/80 bg-slate-950/55 p-4"
+            >
+              <p className="truncate text-xs font-bold text-slate-400">
+                {metric.label}
+              </p>
+              <div className="mt-3 flex items-center gap-2 text-xl font-black">
+                <span className="text-slate-500">
+                  {metric.before}{metric.unit === "%" ? "%" : ""}
+                </span>
+                <ArrowRight className="h-4 w-4 text-cyan-400" />
+                <span className={improved ? "text-emerald-300" : "text-amber-300"}>
+                  {metric.after}{metric.unit === "%" ? "%" : ""}
+                </span>
+              </div>
+              {metric.unit === "คะแนน" && (
+                <p className="mt-1 text-[10px] text-slate-500">คะแนนความเสี่ยง</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-950/15 px-4 py-3">
+        <p className="text-xs font-bold text-amber-300">สมมติฐานการจำลอง</p>
+        <ul className="mt-2 grid gap-1 text-xs text-slate-400 md:grid-cols-3">
+          {simulation.assumptions.map((assumption) => (
+            <li key={assumption}>• {assumption}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 

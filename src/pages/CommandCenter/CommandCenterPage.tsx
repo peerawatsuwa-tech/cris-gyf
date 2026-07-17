@@ -1,11 +1,10 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import SecurityBanner from "@/components/common/SecurityBanner";
 import OperationalMap from "@/components/command/OperationalMap";
-import CommanderSituationOverview from "@/components/command/CommanderSituationOverview";
-import CommanderProblemActionPanel from "@/components/command/CommanderProblemActionPanel";
 import CommanderMorningBrief from "@/components/command/CommanderMorningBrief";
 import MissionCapabilityPanel from "@/components/command/MissionCapabilityPanel";
-import DecisionTodayPanel from "@/components/command/DecisionTodayPanel";
+import CommanderIntelligencePanel from "@/components/command/CommanderIntelligencePanel";
+import FleetSnapshot from "@/components/command/FleetSnapshot";
 
 export default function CommandCenterPage() {
   return (
@@ -15,15 +14,13 @@ export default function CommandCenterPage() {
 
         <CommanderMorningBrief />
 
-        <CommanderSituationOverview />
-
-        <OperationalMap />
-
         <MissionCapabilityPanel />
 
-        <DecisionTodayPanel />
+        <CommanderIntelligencePanel />
 
-        <CommanderProblemActionPanel />
+        <FleetSnapshot />
+
+        <OperationalMap />
       </div>
     </MainLayout>
   );

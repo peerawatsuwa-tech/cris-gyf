@@ -13,6 +13,13 @@ import { calculateReadiness } from "@/engine/calculateReadiness";
 import { calculateAlerts } from "@/engine/alertEngine";
 import type { Ship } from "@/types/ship";
 
+const alertLabels: Record<string, string> = {
+  "Crew below 90%": "กำลังพลต่ำกว่าร้อยละ 90",
+  "Radar unavailable": "เรดาร์ไม่พร้อมใช้งาน",
+  "Weapon unavailable": "ระบบอาวุธไม่พร้อมใช้งาน",
+  "RHIB unavailable": "RHIB ไม่พร้อมใช้งาน",
+};
+
 export default function FleetPage() {
 
   const { fleet } = useFleet();
@@ -162,7 +169,9 @@ function SummaryCard({ label, value, color, icon }: { label: string; value: stri
 function FleetStatusCard({ ship, onSelect }: { ship: Ship; onSelect: () => void }) {
   const readiness = calculateReadiness(ship);
   const alerts = calculateAlerts(ship);
-  const primaryAlert = alerts[0]?.message ?? "No critical limitation";
+  const primaryAlert = alerts[0]
+    ? alertLabels[alerts[0].message] ?? alerts[0].message
+    : "ไม่พบข้อจำกัดสำคัญ";
   const styles = {
     Y: { dot: "bg-emerald-400", text: "text-emerald-300", label: "พร้อม" },
     Q: { dot: "bg-amber-400", text: "text-amber-300", label: "มีข้อจำกัด" },

@@ -32,6 +32,13 @@ const readinessStyle = {
   N: "text-rose-300",
 };
 
+const alertLabels: Record<string, string> = {
+  "Crew below 90%": "กำลังพลต่ำกว่าร้อยละ 90",
+  "Radar unavailable": "เรดาร์ไม่พร้อมใช้งาน",
+  "Weapon unavailable": "ระบบอาวุธไม่พร้อมใช้งาน",
+  "RHIB unavailable": "RHIB ไม่พร้อมใช้งาน",
+};
+
 export default function FleetShipDetailModal({ ship, onClose }: Props) {
   const readiness = calculateReadiness(ship);
   const missions = calculateMission(ship);
@@ -83,7 +90,7 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
                   {alerts.map((alert) => (
                     <div key={alert.message} className="flex gap-2 rounded-lg bg-rose-500/8 p-3 text-sm text-rose-200">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                      {alert.message}
+                      {alertLabels[alert.message] ?? alert.message}
                     </div>
                   ))}
                 </div>

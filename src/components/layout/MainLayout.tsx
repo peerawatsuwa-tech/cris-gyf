@@ -26,6 +26,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const title =
     pageTitle[location.pathname] ??
     "Combat Readiness Information System";
+  const commandBoardMode = location.pathname === "/";
 
   return (
 
@@ -100,7 +101,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         {/* Page Header */}
 
-        <div className="border-b border-slate-800 bg-slate-950/70 px-6 py-4">
+        <div className={`border-b border-slate-800 bg-slate-950/70 px-6 ${commandBoardMode ? "py-2" : "py-4"}`}>
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 
@@ -112,7 +113,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
               </p>
 
-              <h2 className="mt-1 text-2xl font-bold text-white">
+              <h2 className={`${commandBoardMode ? "text-lg" : "mt-1 text-2xl"} font-bold text-white`}>
 
                 {title}
 
@@ -120,7 +121,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
             </div>
 
-            <div className="text-left md:text-right">
+            <div className={`text-left md:text-right ${commandBoardMode ? "hidden xl:block" : ""}`}>
 
               <p className="text-xs uppercase tracking-widest text-slate-500">
 
@@ -142,7 +143,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         {/* Content */}
 
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main className={`min-h-0 flex-1 ${commandBoardMode ? "overflow-hidden p-2 md:p-3" : "overflow-auto p-4 md:p-6"}`}>
 
           {children}
 
@@ -150,7 +151,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         {/* Footer */}
 
-        <footer className="border-t border-slate-800 bg-slate-950/70 px-6 py-4">
+        <footer className={`border-t border-slate-800 bg-slate-950/70 px-6 py-4 ${commandBoardMode ? "hidden" : ""}`}>
 
           <div className="flex flex-col gap-2 text-center text-sm md:flex-row md:justify-between">
 

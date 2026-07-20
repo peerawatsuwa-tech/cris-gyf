@@ -7,7 +7,7 @@ export const UI = {
 
   fleet: "กองเรือ (Fleet)",
 
-  assessment: "การประเมิน (Assessment)",
+  assessment: "ภารกิจ (Mission)",
 
   reports: "รายงาน (Reports)",
 

@@ -14,7 +14,7 @@ const pageTitle: Record<string, string> = {
   "/": "ศูนย์บัญชาการ",
   "/dashboard": "ภาพรวมความพร้อมรบ",
   "/fleet": "ข้อมูลกองเรือ",
-  "/assessment": "การประเมินความพร้อมรบ",
+  "/assessment": "ความพร้อมตามภารกิจ",
 };
 
 export function MainLayout({ children }: MainLayoutProps) {

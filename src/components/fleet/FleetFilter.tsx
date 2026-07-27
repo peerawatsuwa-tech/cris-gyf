@@ -29,19 +29,23 @@ export function FleetFilter({
     >
 
       <option value="all">
-        ทุกสถานะ
+        ทั้งหมด
       </option>
 
       <option value="Y">
-        พร้อมปฏิบัติ
+        พร้อม
       </option>
 
       <option value="Q">
-        พร้อมบางส่วน
+        จำกัด
       </option>
 
       <option value="N">
         ไม่พร้อม
+      </option>
+
+      <option value="U">
+        รอการประเมิน
       </option>
 
     </select>

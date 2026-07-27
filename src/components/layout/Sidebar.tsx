@@ -9,6 +9,7 @@ import {
 import { NavLink } from "react-router-dom";
 
 import { UI } from "@/constants/uiText";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   {
@@ -34,6 +35,7 @@ const navItems = [
 ];
 
 export function Sidebar() {
+  const { logout } = useAuth();
   return (
     <aside className="flex h-full w-72 flex-col border-r border-slate-800 bg-slate-950 text-slate-200">
 
@@ -63,7 +65,7 @@ export function Sidebar() {
 
           <br />
 
-          CRIS v1.0
+          CRIS v0.27
 
         </p>
 
@@ -121,7 +123,7 @@ export function Sidebar() {
 
           <p className="mt-1 text-lg font-bold text-emerald-400">
 
-            CRIS v1.0
+            CRIS v0.27
 
           </p>
 
@@ -133,7 +135,11 @@ export function Sidebar() {
 
         </div>
 
-        <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-red-900/30 hover:text-red-300">
+        <button
+          type="button"
+          onClick={logout}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-red-900/30 hover:text-red-300"
+        >
 
           <LogOut className="h-4 w-4" />
 

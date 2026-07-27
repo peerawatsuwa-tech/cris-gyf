@@ -5,6 +5,30 @@ export type EquipmentStatus =
   | "Limited"
   | "Not Ready";
 
+export type CurrentEquipmentStatus =
+  | EquipmentStatus
+  | "Not Installed"
+  | null;
+
+export interface ShipCurrentReadiness {
+  crew: number | null;
+  propulsion: CurrentEquipmentStatus;
+  radar: CurrentEquipmentStatus;
+  communication: CurrentEquipmentStatus;
+  navigation: CurrentEquipmentStatus;
+  weapon: CurrentEquipmentStatus;
+  rhib: CurrentEquipmentStatus;
+  eoir: CurrentEquipmentStatus;
+  majorDeficiencies: string;
+  missionLimitations: string;
+  updatedAt: string | null;
+}
+
+export interface ShipSourceReference {
+  datasetId: string;
+  communicationReadinessReference: number | null;
+}
+
 export interface Ship {
 
   id: string;
@@ -42,5 +66,9 @@ export interface Ship {
     rhib: EquipmentStatus;
 
   };
+
+  currentReadiness: ShipCurrentReadiness;
+
+  source: ShipSourceReference;
 
 }

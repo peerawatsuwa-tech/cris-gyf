@@ -53,7 +53,12 @@ const equipmentLabels: Array<[
 
 export default function ShipDetailPage() {
   const { id } = useParams();
-  const { fleet, patchCurrentReadiness } = useFleet();
+  const {
+    fleet,
+    lastSavedShipId,
+    patchCurrentReadiness,
+    saveState,
+  } = useFleet();
   const ship = fleet.find((item) => item.id === id);
 
   if (!ship) {
@@ -216,6 +221,15 @@ export default function ShipDetailPage() {
               <p className="text-sm text-slate-500">
                 ข้อมูลที่กรอกจะไม่ถูกเขียนกลับไปยัง Excel
               </p>
+              {lastSavedShipId === ship.id && (
+                <p
+                  className={`mt-1 text-xs font-semibold ${
+                    saveState === "saved" ? "text-emerald-300" : "text-rose-300"
+                  }`}
+                >
+                  {saveState === "saved" ? "บันทึกแล้ว" : "บันทึกไม่สำเร็จ"}
+                </p>
+              )}
             </div>
             <ChevronDown className="h-5 w-5 text-sky-400 transition group-open:rotate-180" />
           </summary>

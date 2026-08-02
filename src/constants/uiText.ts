@@ -3,7 +3,7 @@ export const UI = {
 
   commandCenter: "ศูนย์บัญชาการ (Command Center)",
 
-  dashboard: "ภาพรวม (Dashboard)",
+  dashboard: "Dashboard",
 
   fleet: "กองเรือ (Fleet)",
 

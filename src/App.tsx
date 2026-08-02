@@ -8,7 +8,6 @@ import FleetPage from "./pages/Fleet/FleetPage";
 import ShipDetailPage from "./pages/Ship/ShipDetailPage";
 import AssessmentPage from "./pages/Assessment/AssessmentPage";
 import LoginPage from "./pages/Login/LoginPage";
-import CommandCenterPage from "./pages/CommandCenter/CommandCenterPage";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -24,7 +23,8 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<ProtectedRoute><CommandCenterPage /></ProtectedRoute>} />
+            <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" replace /></ProtectedRoute>} />
+            <Route path="/command-center" element={<ProtectedRoute><Navigate to="/dashboard" replace /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/fleet" element={<ProtectedRoute><FleetPage /></ProtectedRoute>} />
             <Route path="/ship/:id" element={<ProtectedRoute><ShipDetailPage /></ProtectedRoute>} />

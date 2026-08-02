@@ -1,5 +1,41 @@
 # CRIS Engineering Report
 
+## Mission Order 008 — CRIS v0.27.2
+
+### Root Cause
+
+- `/` rendered `CommandCenterPage`, which re-exported the same Dashboard page.
+- Sidebar exposed both `/` and `/dashboard`, producing two navigation choices for
+  the same executive summary with no distinct prototype role.
+
+### Consolidation
+
+- Dashboard remains the single executive view with Commander Summary, Fleet
+  Readiness, three-mission Mission Readiness, Major Deficiencies, and Fleet Status.
+- Sidebar navigation changed from Command Center + Dashboard to Dashboard only.
+- `/` and `/command-center` redirect to protected `/dashboard` using replace
+  navigation, preserving old bookmarks without rendering a second summary.
+- Legacy Command Center components and hooks remain in source but are not imported
+  or rendered by the active route tree.
+
+### Verification
+
+- Login default route `/dashboard`: PASS
+- Direct `/dashboard`: PASS
+- `/` redirect to `/dashboard`: PASS
+- `/command-center` redirect to `/dashboard`: PASS
+- Sidebar contains no Command Center: PASS
+- Commander Summary and fleet count 40: PASS
+- Mission Readiness contains exactly three approved missions: PASS
+- Ship edit and visible save confirmation: PASS
+- Dashboard immediate update: PASS (`Y 1`, pending `39`)
+- Refresh and logout/login persistence: PASS
+- Responsive 1920 / 1440 / 1280: PASS; no horizontal overflow
+- Browser console errors: 0
+- TypeScript and Vite build: PASS
+- Lint: PASS with existing Fast Refresh warnings
+- `src/engine` changes: NONE
+
 ## Critical Hotfix 007 — CRIS v0.27.1
 
 ### Defects and Root Cause

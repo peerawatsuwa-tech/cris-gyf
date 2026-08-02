@@ -1,5 +1,4 @@
 import {
-  LayoutGrid,
   ShipWheel,
   BarChart3,
   LogOut,
@@ -12,11 +11,6 @@ import { UI } from "@/constants/uiText";
 import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
-  {
-    label: UI.commandCenter,
-    icon: LayoutGrid,
-    href: "/",
-  },
   {
     label: UI.dashboard,
     icon: BarChart3,
@@ -84,7 +78,6 @@ export function Sidebar() {
             <NavLink
               key={item.label}
               to={item.href}
-              end={item.href === "/"}
               className={({ isActive }) =>
                 `
                   flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all

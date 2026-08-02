@@ -1,5 +1,13 @@
 # Changelog
 
+## CRIS v0.27.2 — Mission Order 008 — 2026-08-02
+
+- Consolidated the duplicate Command Center and Dashboard navigation into one Dashboard executive view.
+- Made `/` and the legacy `/command-center` bookmark redirect to `/dashboard` behind route protection.
+- Removed Command Center from the Sidebar and standardized the remaining executive navigation label as `Dashboard`.
+- Kept the existing Dashboard data, readiness summary, three missions, fleet dataset, and persistence behavior unchanged.
+- Verified login/logout, editing, refresh persistence, route redirects, and responsive layouts without changing `src/engine`.
+
 ## CRIS v0.27.1 — Critical Hotfix 007 — 2026-07-27
 
 - Made readiness overlay writes synchronous before React state updates, closing the refresh/close race window.

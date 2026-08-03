@@ -29,7 +29,14 @@ const navItems = [
 ];
 
 export function Sidebar() {
-  const { logout } = useAuth();
+  const { logout, profile } = useAuth();
+  const visibleNavItems = profile?.role === "ship" && profile.shipId
+    ? [{
+        label: profile.shipId.replace("ship-", "เรือ "),
+        icon: ShipWheel,
+        href: `/ship/${encodeURIComponent(profile.shipId)}`,
+      }]
+    : navItems;
   return (
     <aside className="flex h-full w-72 flex-col border-r border-slate-800 bg-slate-950 text-slate-200">
 
@@ -59,7 +66,7 @@ export function Sidebar() {
 
           <br />
 
-          CRIS v0.27
+          CRIS v0.28
 
         </p>
 
@@ -69,7 +76,7 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-2 p-5">
 
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
 
           const Icon = item.icon;
 
@@ -116,7 +123,7 @@ export function Sidebar() {
 
           <p className="mt-1 text-lg font-bold text-emerald-400">
 
-            CRIS v0.27
+            CRIS v0.28
 
           </p>
 
@@ -130,7 +137,7 @@ export function Sidebar() {
 
         <button
           type="button"
-          onClick={logout}
+          onClick={() => void logout()}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-red-900/30 hover:text-red-300"
         >
 

@@ -52,7 +52,7 @@ export default function AssessmentPage() {
           <div>
             <h2 className="text-xl font-bold text-white">สถานะภารกิจ</h2>
             <p className="mt-1 text-sm text-slate-400">
-              ผลรวมจากข้อมูลปัจจุบันหลัง Merge Local Storage Overlay
+              ผลรวมจากข้อมูลปัจจุบันหลัง Merge Cloud Readiness Overlay
             </p>
           </div>
 

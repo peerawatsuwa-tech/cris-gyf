@@ -1,113 +1,122 @@
-import { createContext, useContext, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
-import { EXCEL_DATASET_ID, fleet as baseFleet } from "@/data/excelFleet";
+import { useAuth } from "@/context/AuthContext";
+import {
+  loadFleetData,
+  patchShipOverlay,
+  subscribeToFleetChanges,
+  type CloudOverlay,
+} from "@/services/fleetService";
+import { supabase } from "@/services/supabase";
 import type { Ship, ShipCurrentReadiness } from "@/types/ship";
 
 interface FleetContextType {
   fleet: Ship[];
+  loading: boolean;
+  error: string | null;
   saveState: "idle" | "saved" | "error";
   lastSavedShipId: string | null;
   patchCurrentReadiness: (
     id: string,
     patch: Partial<ShipCurrentReadiness>,
-  ) => void;
+  ) => Promise<void>;
 }
 
-const OVERLAY_STORAGE_KEY = "cris-v027-readiness-overlay-v1";
-const OVERLAY_SCHEMA_VERSION = 1;
+const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
-type ReadinessOverlay = {
-  schemaVersion: number;
-  datasetId: string;
-  byShipId: Record<string, Partial<ShipCurrentReadiness>>;
-};
-
-const FleetContext =
-  createContext<FleetContextType | undefined>(undefined);
-
-function emptyOverlay(): ReadinessOverlay {
-  return {
-    schemaVersion: OVERLAY_SCHEMA_VERSION,
-    datasetId: EXCEL_DATASET_ID,
-    byShipId: {},
-  };
-}
-
-function loadOverlay(): ReadinessOverlay {
-  const empty = emptyOverlay();
-  const saved = localStorage.getItem(OVERLAY_STORAGE_KEY);
-  if (!saved) return empty;
-
-  try {
-    const parsed = JSON.parse(saved) as ReadinessOverlay;
-    if (
-      parsed.schemaVersion !== OVERLAY_SCHEMA_VERSION ||
-      parsed.datasetId !== EXCEL_DATASET_ID ||
-      typeof parsed.byShipId !== "object" ||
-      parsed.byShipId === null
-    ) {
-      return empty;
-    }
-
-    return {
-      ...empty,
-      byShipId: Object.fromEntries(
-        Object.entries(parsed.byShipId).filter(([id]) =>
-          baseFleet.some((ship) => ship.id === id),
-        ),
-      ),
-    };
-  } catch {
-    return empty;
-  }
-}
-
-export function FleetProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-
-  const [overlay, setOverlay] = useState<ReadinessOverlay>(loadOverlay);
+export function FleetProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, profile } = useAuth();
+  const [ships, setShips] = useState<Ship[]>([]);
+  const [overlay, setOverlay] = useState<CloudOverlay>({});
   const overlayRef = useRef(overlay);
+  const saveQueue = useRef<Record<string, Promise<void>>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
   const [lastSavedShipId, setLastSavedShipId] = useState<string | null>(null);
 
-  const fleet = baseFleet.map((ship) => ({
-    ...ship,
-    currentReadiness: {
-      ...ship.currentReadiness,
-      ...(overlay.byShipId[ship.id] ?? {}),
-    },
-  }));
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated) return;
 
-  function patchCurrentReadiness(
+    try {
+      const data = await loadFleetData();
+      setShips(data.ships);
+      setOverlay(data.overlay);
+      overlayRef.current = data.overlay;
+      setError(null);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "โหลดข้อมูลกองเรือไม่สำเร็จ");
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setShips([]);
+      setOverlay({});
+      overlayRef.current = {};
+      return;
+    }
+
+    setLoading(true);
+    void refresh();
+
+    const channel = subscribeToFleetChanges(() => {
+      void refresh();
+    });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [isAuthenticated, refresh]);
+
+  const fleet = useMemo(
+    () => ships.map((ship) => ({
+      ...ship,
+      currentReadiness: {
+        ...ship.currentReadiness,
+        ...(overlay[ship.id] ?? {}),
+      },
+    })),
+    [overlay, ships],
+  );
+
+  async function patchCurrentReadiness(
     id: string,
     patch: Partial<ShipCurrentReadiness>,
   ) {
-    if (!baseFleet.some((ship) => ship.id === id)) return;
+    const mayEdit =
+      profile?.role === "admin" ||
+      (profile?.role === "ship" && profile.shipId === id);
+    if (!mayEdit || !ships.some((ship) => ship.id === id)) return;
 
-    const previous = overlayRef.current;
-    const next: ReadinessOverlay = {
-      ...previous,
-      byShipId: {
-        ...previous.byShipId,
-        [id]: {
-          ...(previous.byShipId[id] ?? {}),
-          ...patch,
-        },
-      },
+    const current = overlayRef.current[id] ??
+      ships.find((ship) => ship.id === id)?.currentReadiness;
+    if (!current) return;
+
+    const nextOverlay = {
+      ...overlayRef.current,
+      [id]: { ...current, ...patch },
     };
+    overlayRef.current = nextOverlay;
+    setOverlay(nextOverlay);
+    setLastSavedShipId(id);
+    setSaveState("idle");
+
+    const previousSave = saveQueue.current[id] ?? Promise.resolve();
+    const nextSave = previousSave.then(() => patchShipOverlay(id, patch));
+    saveQueue.current[id] = nextSave;
 
     try {
-      localStorage.setItem(OVERLAY_STORAGE_KEY, JSON.stringify(next));
-      overlayRef.current = next;
-      setOverlay(next);
-      setLastSavedShipId(id);
+      await nextSave;
       setSaveState("saved");
     } catch {
       setSaveState("error");
+      await refresh();
+    } finally {
+      if (saveQueue.current[id] === nextSave) delete saveQueue.current[id];
     }
   }
 
@@ -115,6 +124,8 @@ export function FleetProvider({
     <FleetContext.Provider
       value={{
         fleet,
+        loading,
+        error,
         saveState,
         lastSavedShipId,
         patchCurrentReadiness,
@@ -126,15 +137,7 @@ export function FleetProvider({
 }
 
 export function useFleet() {
-
-  const context =
-    useContext(FleetContext);
-
-  if (!context) {
-    throw new Error(
-      "useFleet must be used inside FleetProvider"
-    );
-  }
-
+  const context = useContext(FleetContext);
+  if (!context) throw new Error("useFleet must be used inside FleetProvider");
   return context;
 }

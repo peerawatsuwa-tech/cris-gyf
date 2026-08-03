@@ -131,7 +131,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
               <p className="font-semibold text-emerald-400">
 
-                CRIS v0.27 Prototype
+                CRIS v0.28 Prototype
 
               </p>
 
@@ -163,7 +163,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
             <span className="text-slate-500">
 
-              Royal Thai Navy • Coast Guard Squadron • Version v0.27 Prototype
+              Royal Thai Navy • Coast Guard Squadron • Version v0.28 Prototype
 
             </span>
 

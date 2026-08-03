@@ -93,7 +93,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <section>
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-400">
-            CRIS v0.27 · Excel Dataset
+            CRIS v0.28 · Cloud Dataset
           </p>
           <h1 className="mt-1 text-3xl font-black text-white">ภาพรวมความพร้อมกองเรือ</h1>
         </section>

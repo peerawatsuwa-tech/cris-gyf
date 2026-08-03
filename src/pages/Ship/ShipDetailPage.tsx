@@ -10,6 +10,7 @@ import {
 import { MainLayout } from "@/components/layout/MainLayout";
 import EquipmentCard from "@/components/ship/EquipmentCard";
 import PersonnelCard from "@/components/ship/PersonnelCard";
+import { useAuth } from "@/context/AuthContext";
 import { useFleet } from "@/context/FleetContext";
 import {
   evaluateShip,
@@ -53,6 +54,7 @@ const equipmentLabels: Array<[
 
 export default function ShipDetailPage() {
   const { id } = useParams();
+  const { profile } = useAuth();
   const {
     fleet,
     lastSavedShipId,
@@ -60,6 +62,9 @@ export default function ShipDetailPage() {
     saveState,
   } = useFleet();
   const ship = fleet.find((item) => item.id === id);
+  const canEdit =
+    profile?.role === "admin" ||
+    (profile?.role === "ship" && profile.shipId === id);
 
   if (!ship) {
     return (
@@ -81,13 +86,15 @@ export default function ShipDetailPage() {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <Link
-          to="/fleet"
-          className="inline-flex items-center gap-2 text-sm text-sky-300 hover:text-sky-200"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          กลับภาพรวมกองเรือ
-        </Link>
+        {profile?.role !== "ship" && (
+          <Link
+            to="/fleet"
+            className="inline-flex items-center gap-2 text-sm text-sky-300 hover:text-sky-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            กลับภาพรวมกองเรือ
+          </Link>
+        )}
 
         <section className={`overflow-hidden rounded-2xl border ${style.border} bg-slate-950/70`}>
           <div className="flex flex-col justify-between gap-4 border-b border-slate-800 p-5 lg:flex-row lg:items-center">
@@ -211,11 +218,12 @@ export default function ShipDetailPage() {
           </section>
         </div>
 
+        {canEdit && (
         <details className="group rounded-2xl border border-slate-800 bg-slate-950/60">
           <summary className="flex cursor-pointer list-none items-center justify-between p-5">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-400">
-                Local Storage Readiness Overlay
+                Cloud Readiness Overlay
               </p>
               <h2 className="text-xl font-bold text-white">ปรับปรุงข้อมูลปัจจุบัน</h2>
               <p className="text-sm text-slate-500">
@@ -278,6 +286,7 @@ export default function ShipDetailPage() {
             </label>
           </div>
         </details>
+        )}
 
         {missing.length > 0 && (
           <section className="flex gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-100">

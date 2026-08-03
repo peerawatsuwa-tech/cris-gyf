@@ -1,13 +1,7 @@
-import { supabase } from "./supabase";
+import { loadFleetData } from "@/services/fleetService";
+
+export { patchShipOverlay, subscribeToFleetChanges } from "@/services/fleetService";
 
 export async function getShips() {
-
-  const { data, error } = await supabase
-    .from("ships")
-    .select("*");
-
-  if (error) throw error;
-
-  return data;
-
+  return (await loadFleetData()).ships;
 }

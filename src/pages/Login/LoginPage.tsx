@@ -9,7 +9,7 @@ type LoginLocationState = {
 };
 
 export default function LoginPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, loading, login, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [username, setUsername] = useState("");
@@ -18,7 +18,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) {
+    return (
+      <Navigate
+        to={profile?.role === "ship" && profile.shipId
+          ? `/ship/${encodeURIComponent(profile.shipId)}`
+          : "/dashboard"}
+        replace
+      />
+    );
+  }
 
   const from =
     (location.state as LoginLocationState | null)?.from?.pathname ?? "/dashboard";
@@ -45,12 +54,13 @@ export default function LoginPage() {
 
         <form
           className="space-y-4 px-7 py-7"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
-            if (login(username, password, remember)) {
+            const result = await login(username, password, remember);
+            if (result.ok) {
               navigate(from, { replace: true });
             } else {
-              setError("กรุณากรอก Username และ Password");
+              setError(result.error ?? "เข้าสู่ระบบไม่สำเร็จ");
             }
           }}
         >
@@ -108,7 +118,7 @@ export default function LoginPage() {
               />
               Remember Me
             </label>
-            <span className="text-xs text-slate-500">Mock Authentication</span>
+            <span className="text-xs text-slate-500">Supabase Authentication</span>
           </div>
 
           {error && (
@@ -119,15 +129,16 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            disabled={loading}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-sky-950/50 transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
           >
             <ShieldCheck className="h-5 w-5" />
-            Login
+            {loading ? "Signing in..." : "Login"}
           </button>
         </form>
 
         <footer className="border-t border-slate-800 bg-slate-950/55 px-7 py-4 text-center text-xs font-semibold tracking-wider text-slate-500">
-          Version v0.27 Prototype
+          Version v0.28 Prototype
         </footer>
       </section>
     </main>

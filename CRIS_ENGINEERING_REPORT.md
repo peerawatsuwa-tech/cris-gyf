@@ -1,5 +1,29 @@
 # CRIS Engineering Report
 
+## WR-013 — CRIS v0.28 Sprint 001
+
+### Implemented
+
+- Supabase Auth session lifecycle and profile loading
+- PostgreSQL fleet source, readiness overlay RPC, and Realtime subscription
+- `commander`, `admin`, and ship-isolated `ship` authorization
+- RLS policies, field-level audit trigger, and private admin Storage bucket
+- Generated 40-ship seed and secret-driven demo-account provisioning
+- No readiness data stored in browser Local Storage
+
+### Local Verification
+
+- TypeScript and Vite build: PASS
+- Lint: PASS with Fast Refresh warnings
+- Source fleet seed count: 40
+- `src/engine` changes: NONE
+
+### External Verification Gate
+
+BLOCKED pending Supabase project credentials and deployment configuration. Live
+role login, RLS, Realtime, audit, account provisioning, browser regression, and
+deployment URL cannot be truthfully verified without the external project.
+
 ## Mission Order 008 — CRIS v0.27.2
 
 ### Root Cause

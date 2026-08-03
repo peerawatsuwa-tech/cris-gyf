@@ -1,5 +1,14 @@
 # Changelog
 
+## CRIS v0.28 — Sprint 001 Cloud Data Foundation — 2026-08-03
+
+- Replaced the fleet readiness Local Storage overlay with Supabase PostgreSQL and Realtime synchronization.
+- Replaced mock login with Supabase email/password authentication, session restore, token refresh, and logout.
+- Added `commander`, `admin`, and ship-isolated `ship` role enforcement in routes, UI permissions, RPC validation, and PostgreSQL RLS.
+- Added field-level audit logging and a private admin-only Storage bucket.
+- Added a generated 40-ship cloud seed and server-side demo-account provisioning without committed passwords.
+- Preserved the existing Ship domain model, readiness logic, Dashboard composition, and `src/engine`.
+
 ## CRIS v0.27.2 — Mission Order 008 — 2026-08-02
 
 - Consolidated the duplicate Command Center and Dashboard navigation into one Dashboard executive view.

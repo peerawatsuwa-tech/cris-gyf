@@ -35,7 +35,7 @@ function ShipRoute() {
   const { id } = useParams();
   const { profile } = useAuth();
 
-  if (profile?.role === "ship" && id !== profile.shipId) {
+  if (profile?.role === "ship" && profile.shipId && id !== profile.shipId) {
     return <Navigate to={homePathFor(profile)} replace />;
   }
 
@@ -52,7 +52,7 @@ export default function App() {
             <Route path="/" element={<ProtectedRoute><RoleHome /></ProtectedRoute>} />
             <Route path="/command-center" element={<ProtectedRoute roles={["admin", "commander"]}><Navigate to="/dashboard" replace /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute roles={["admin", "commander"]}><DashboardPage /></ProtectedRoute>} />
-            <Route path="/fleet" element={<ProtectedRoute roles={["admin", "commander"]}><FleetPage /></ProtectedRoute>} />
+            <Route path="/fleet" element={<ProtectedRoute><FleetPage /></ProtectedRoute>} />
             <Route path="/ship/:id" element={<ProtectedRoute><ShipRoute /></ProtectedRoute>} />
             <Route path="/assessment" element={<ProtectedRoute roles={["admin", "commander"]}><AssessmentPage /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

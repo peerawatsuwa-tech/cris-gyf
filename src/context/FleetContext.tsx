@@ -89,7 +89,7 @@ export function FleetProvider({ children }: { children: ReactNode }) {
   ) {
     const mayEdit =
       profile?.role === "admin" ||
-      (profile?.role === "ship" && profile.shipId === id);
+      (profile?.role === "ship" && (!profile.shipId || profile.shipId === id));
     if (!mayEdit || !ships.some((ship) => ship.id === id)) return;
 
     const current = overlayRef.current[id] ??

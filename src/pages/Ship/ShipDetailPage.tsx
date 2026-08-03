@@ -64,7 +64,7 @@ export default function ShipDetailPage() {
   const ship = fleet.find((item) => item.id === id);
   const canEdit =
     profile?.role === "admin" ||
-    (profile?.role === "ship" && profile.shipId === id);
+    (profile?.role === "ship" && (!profile.shipId || profile.shipId === id));
 
   if (!ship) {
     return (

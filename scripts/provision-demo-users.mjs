@@ -5,7 +5,7 @@ const required = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "CRIS_COMMANDER_PASSWORD",
   "CRIS_ADMIN_PASSWORD",
-  "CRIS_SHIP111_PASSWORD",
+  "CRIS_SHIP_PASSWORD",
 ];
 
 for (const name of required) {
@@ -32,10 +32,10 @@ const accounts = [
     ship_id: null,
   },
   {
-    email: "ship111@cris.local",
-    password: process.env.CRIS_SHIP111_PASSWORD,
+    email: "ship@cris.local",
+    password: process.env.CRIS_SHIP_PASSWORD,
     role: "ship",
-    ship_id: "ship-ต111",
+    ship_id: null,
   },
 ];
 

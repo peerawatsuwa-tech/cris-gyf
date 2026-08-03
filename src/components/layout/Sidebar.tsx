@@ -30,11 +30,11 @@ const navItems = [
 
 export function Sidebar() {
   const { logout, profile } = useAuth();
-  const visibleNavItems = profile?.role === "ship" && profile.shipId
+  const visibleNavItems = profile?.role === "ship"
     ? [{
-        label: profile.shipId.replace("ship-", "เรือ "),
+        label: profile.shipId ? profile.shipId.replace("ship-", "เรือ ") : "Ship Edit",
         icon: ShipWheel,
-        href: `/ship/${encodeURIComponent(profile.shipId)}`,
+        href: profile.shipId ? `/ship/${encodeURIComponent(profile.shipId)}` : "/fleet",
       }]
     : navItems;
   return (

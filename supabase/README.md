@@ -8,7 +8,7 @@ Prototype login aliases are normalized by the frontend:
 
 - `command` → `command@cris.local` → role `commander`
 - `admin` → `admin@cris.local` → role `admin`
-- `ship111` → `ship111@cris.local` → role `ship`, ship ID `ship-ต111`
+- `ship` → `ship@cris.local` → role `ship`, Demo Ship Edit for every ship
 
 The passwords from the War Room order are deployment inputs, not source code.
 Disable or rotate these accounts after the demonstration.
@@ -18,8 +18,10 @@ Security boundaries are enforced in PostgreSQL:
 - `commander`: all ships and overlays are selectable; no overlay mutation.
 - `admin`: all ships and overlays are selectable and editable through the
   validated `patch_ship_overlay` RPC; audit logs are selectable.
-- `ship`: only its assigned ship and overlay are selectable; the RPC rejects
-  any other ship ID.
+- Production `ship`: only its assigned ship and overlay are selectable; the RPC
+  rejects any other ship ID.
+- Demo `ship@cris.local`: may select and edit every ship, but receives no
+  Dashboard, Fleet Summary, or Assessment navigation.
 
 `ship_overlay` is included in the `supabase_realtime` publication. The frontend
 subscribes to its authorized Postgres changes and refreshes the shared fleet

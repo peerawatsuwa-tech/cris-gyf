@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { ClipboardList, ShipWheel } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import FleetSearch from "@/components/fleet/FleetSearch";
 import { FleetFilter } from "@/components/fleet/FleetFilter";
 import FleetShipDetailModal from "@/components/fleet/FleetShipDetailModal";
+import { useAuth } from "@/context/AuthContext";
 import { useFleet } from "@/context/FleetContext";
 import {
   evaluateShip,
@@ -26,6 +28,9 @@ const styles: Record<
 
 export default function FleetPage() {
   const { fleet } = useFleet();
+  const { profile } = useAuth();
+  const navigate = useNavigate();
+  const isDemoShip = profile?.role === "ship" && !profile.shipId;
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
@@ -46,18 +51,20 @@ export default function FleetPage() {
       <div className="space-y-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-400">
-            Fleet Status Module · Excel Dataset
+            {isDemoShip ? "Ship Edit · Excel Dataset" : "Fleet Status Module · Excel Dataset"}
           </p>
-          <h1 className="text-3xl font-bold text-white">ภาพรวมสถานะกองเรือ</h1>
+          <h1 className="text-3xl font-bold text-white">
+            {isDemoShip ? "เลือกเรือที่ต้องการแก้ไข" : "ภาพรวมสถานะกองเรือ"}
+          </h1>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {!isDemoShip && <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           <SummaryCard label="เรือทั้งหมด" value={fleet.length} icon={<ShipWheel className="h-5 w-5" />} color="text-sky-300" />
           <SummaryCard label="พร้อม (Y)" value={summary.counts.Y} color="text-emerald-300" />
           <SummaryCard label="มีข้อจำกัด (Q)" value={summary.counts.Q} color="text-amber-300" />
           <SummaryCard label="ไม่พร้อม (N)" value={summary.counts.N} color="text-rose-300" />
           <SummaryCard label="รอการประเมิน" value={summary.counts.U} color="text-sky-200" />
-        </div>
+        </div>}
 
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="flex-1">
@@ -76,7 +83,9 @@ export default function FleetPage() {
               <FleetStatusCard
                 key={ship.id}
                 ship={ship}
-                onSelect={() => setSelectedShip(ship)}
+                onSelect={() => isDemoShip
+                  ? navigate(`/ship/${encodeURIComponent(ship.id)}`)
+                  : setSelectedShip(ship)}
               />
             ))
           ) : (
@@ -87,7 +96,7 @@ export default function FleetPage() {
         </div>
       </div>
 
-      {selectedShip && (
+      {!isDemoShip && selectedShip && (
         <FleetShipDetailModal
           ship={selectedShip}
           onClose={() => setSelectedShip(null)}

@@ -9,8 +9,8 @@ export interface UserProfile {
 }
 
 export function homePathFor(profile: UserProfile | null): string {
-  if (profile?.role === "ship" && profile.shipId) {
-    return `/ship/${encodeURIComponent(profile.shipId)}`;
+  if (profile?.role === "ship") {
+    return profile.shipId ? `/ship/${encodeURIComponent(profile.shipId)}` : "/fleet";
   }
 
   return "/dashboard";

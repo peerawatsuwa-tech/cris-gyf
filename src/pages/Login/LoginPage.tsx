@@ -21,8 +21,8 @@ export default function LoginPage() {
   if (isAuthenticated) {
     return (
       <Navigate
-        to={profile?.role === "ship" && profile.shipId
-          ? `/ship/${encodeURIComponent(profile.shipId)}`
+        to={profile?.role === "ship"
+          ? profile.shipId ? `/ship/${encodeURIComponent(profile.shipId)}` : "/fleet"
           : "/dashboard"}
         replace
       />

@@ -5,16 +5,17 @@ import { useLocation } from "react-router-dom";
 
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { UI } from "@/constants/uiText";
 
 type MainLayoutProps = {
   children: ReactNode;
 };
 
 const pageTitle: Record<string, string> = {
-  "/": "ศูนย์บัญชาการ",
-  "/dashboard": "ภาพรวมความพร้อมรบ",
-  "/fleet": "ข้อมูลกองเรือ",
-  "/assessment": "ความพร้อมตามภารกิจ",
+  "/": UI.pages.dashboard,
+  "/dashboard": UI.pages.dashboard,
+  "/fleet": UI.pages.fleet,
+  "/assessment": UI.pages.assessment,
 };
 
 export function MainLayout({ children }: MainLayoutProps) {
@@ -25,7 +26,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const title =
     pageTitle[location.pathname] ??
-    "Combat Readiness Information System";
+    UI.pages.shipDetail;
   const commandBoardMode = location.pathname === "/";
 
   return (
@@ -84,7 +85,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
 
             <div className="text-xs text-slate-400">
-              Coast Guard Squadron
+              {UI.organization.squadron}
             </div>
 
           </div>
@@ -109,7 +110,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
               <p className="text-xs uppercase tracking-[0.35em] text-sky-400">
 
-                Combat Readiness Information System
+                {UI.organization.systemName}
 
               </p>
 
@@ -125,7 +126,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
               <p className="text-xs uppercase tracking-widest text-slate-500">
 
-                Version
+                {UI.labels.version}
 
               </p>
 
@@ -157,13 +158,13 @@ export function MainLayout({ children }: MainLayoutProps) {
 
             <span className="text-slate-500">
 
-              Combat Readiness Information System (CRIS)
+              {UI.organization.systemName} (CRIS)
 
             </span>
 
             <span className="text-slate-500">
 
-              Royal Thai Navy • Coast Guard Squadron • Version v0.28 Prototype
+              {UI.organization.navy} • {UI.organization.squadron} • {UI.labels.version} v0.28 Prototype
 
             </span>
 

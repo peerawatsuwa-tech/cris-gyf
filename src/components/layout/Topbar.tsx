@@ -8,8 +8,12 @@ import {
   ShieldCheck,
   UserCircle2,
 } from "lucide-react";
+import { UI } from "@/constants/uiText";
+import { useAuth } from "@/context/AuthContext";
 
 export function Topbar() {
+
+  const { profile } = useAuth();
 
   const [now, setNow] = useState(new Date());
 
@@ -55,19 +59,19 @@ export function Topbar() {
 
           <p className="text-xs uppercase tracking-[0.35em] text-sky-400">
 
-            Royal Thai Navy
+            {UI.organization.navy}
 
           </p>
 
           <h1 className="text-xl font-bold text-white md:text-2xl">
 
-            Combat Readiness Information System
+            {UI.organization.systemName}
 
           </h1>
 
           <p className="text-xs text-slate-400 md:text-sm">
 
-            Coast Guard Squadron
+            {UI.organization.squadron}
 
           </p>
 
@@ -86,7 +90,8 @@ export function Topbar() {
           <Search className="h-4 w-4 text-slate-500"/>
 
           <input
-            placeholder="Search Ship..."
+            aria-label={UI.labels.searchShip}
+            placeholder={UI.labels.searchShip}
             className="w-48 bg-transparent text-white outline-none placeholder:text-slate-500"
           />
 
@@ -128,7 +133,7 @@ export function Topbar() {
 
           <span className="text-sm font-semibold text-emerald-400">
 
-            SYSTEM ONLINE
+            {UI.labels.systemOnline}
 
           </span>
 
@@ -162,13 +167,13 @@ export function Topbar() {
 
             <p className="text-xs text-slate-500">
 
-              Commander
+              {profile ? UI.roles[profile.role] : UI.roles.commander}
 
             </p>
 
             <p className="text-sm font-semibold text-white">
 
-              Coast Guard Squadron
+              {UI.organization.squadron}
 
             </p>
 

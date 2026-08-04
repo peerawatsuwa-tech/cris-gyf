@@ -3,6 +3,7 @@ import type {
   Ship,
   ShipCurrentReadiness,
 } from "@/types/ship";
+import { UI } from "@/constants/uiText";
 
 interface Props {
   ship: Ship;
@@ -15,20 +16,20 @@ const BASE_OPTIONS: Array<{
   value: Exclude<CurrentEquipmentStatus, "Not Installed">;
   label: string;
 }> = [
-  { value: null, label: "รอการประเมิน" },
-  { value: "Operational", label: "Operational" },
-  { value: "Limited", label: "Limited" },
-  { value: "Not Ready", label: "Not Ready" },
+  { value: null, label: UI.status.pending },
+  { value: "Operational", label: UI.status.operational },
+  { value: "Limited", label: UI.status.limited },
+  { value: "Not Ready", label: UI.status.notReady },
 ];
 
 const rows = [
-  { label: "ระบบขับเคลื่อน", key: "propulsion", allowNotInstalled: false },
-  { label: "Radar", key: "radar", allowNotInstalled: false },
-  { label: "Communication", key: "communication", allowNotInstalled: false },
-  { label: "Navigation", key: "navigation", allowNotInstalled: false },
-  { label: "Weapon", key: "weapon", allowNotInstalled: false },
-  { label: "RHIB", key: "rhib", allowNotInstalled: true },
-  { label: "EO / IR", key: "eoir", allowNotInstalled: true },
+  { label: UI.equipment.propulsion, key: "propulsion", allowNotInstalled: false },
+  { label: UI.equipment.radar, key: "radar", allowNotInstalled: false },
+  { label: UI.equipment.communication, key: "communication", allowNotInstalled: false },
+  { label: UI.equipment.navigation, key: "navigation", allowNotInstalled: false },
+  { label: UI.equipment.weapon, key: "weapon", allowNotInstalled: false },
+  { label: UI.equipment.rhib, key: "rhib", allowNotInstalled: true },
+  { label: UI.equipment.eoir, key: "eoir", allowNotInstalled: true },
 ] satisfies Array<{
   label: string;
   key: keyof Pick<
@@ -56,10 +57,10 @@ export default function EquipmentCard({ ship, onEquipmentChange }: Props) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
       <h3 className="text-lg font-semibold text-white">
-        สถานะปัจจุบันของระบบ (Current Readiness)
+        {UI.sections.equipment}
       </h3>
       <p className="mt-1 text-xs text-slate-500">
-        คะแนน Communication จาก Excel เป็นข้อมูลอ้างอิงเท่านั้น:
+        คะแนนระบบสื่อสารจาก Excel (Communication Score) เป็นข้อมูลอ้างอิงเท่านั้น:
         {" "}
         {ship.source.communicationReadinessReference === null
           ? "ไม่มีข้อมูล"
@@ -72,7 +73,7 @@ export default function EquipmentCard({ ship, onEquipmentChange }: Props) {
           const options = row.allowNotInstalled
             ? [
                 ...BASE_OPTIONS,
-                { value: "Not Installed" as const, label: "Not Installed" },
+                { value: "Not Installed" as const, label: UI.status.notInstalled },
               ]
             : BASE_OPTIONS;
           return (

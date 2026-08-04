@@ -3,14 +3,8 @@ import { AlertTriangle, Radio, ShipWheel, Users } from "lucide-react";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useFleet } from "@/context/FleetContext";
+import { readinessStatusText, UI } from "@/constants/uiText";
 import { summarizeFleet, type ReadinessStatus } from "@/lib/readinessV027";
-
-const statusText: Record<ReadinessStatus, string> = {
-  Y: "พร้อม",
-  Q: "จำกัด",
-  N: "ไม่พร้อม",
-  U: "รอการประเมิน",
-};
 
 const statusTone: Record<ReadinessStatus, string> = {
   Y: "text-emerald-300 border-emerald-500/30 bg-emerald-500/5",
@@ -49,7 +43,7 @@ export default function DashboardPage() {
           icon: ShipWheel,
         },
         {
-          label: "Radar",
+          label: UI.equipment.radar,
           value: current.filter(
             (item) => item.radar === "Limited" || item.radar === "Not Ready",
           ).length,
@@ -93,31 +87,31 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <section>
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-400">
-            CRIS v0.28 · Cloud Dataset
+            CRIS v0.28 · {UI.labels.cloudDataset}
           </p>
-          <h1 className="mt-1 text-3xl font-black text-white">ภาพรวมความพร้อมกองเรือ</h1>
+          <h1 className="mt-1 text-3xl font-black text-white">{UI.pages.dashboard}</h1>
         </section>
 
         <section className="rounded-2xl border border-sky-700/40 bg-sky-950/25 p-5">
-          <SectionTitle title="Commander Summary" />
+          <SectionTitle title={UI.sections.commanderSummary} />
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <CommanderMetric label="เรือทั้งหมด" value={fleet.length} />
+            <CommanderMetric label={UI.labels.allShips} value={fleet.length} />
             <CommanderMetric
-              label="ประเมินแล้ว"
+              label={UI.labels.assessed}
               value={dashboard.counts.Y + dashboard.counts.Q + dashboard.counts.N}
             />
-            <CommanderMetric label="รอการประเมิน" value={dashboard.counts.U} tone="text-sky-200" />
-            <CommanderMetric label="ไม่พร้อม" value={dashboard.counts.N} tone="text-rose-300" />
+            <CommanderMetric label={UI.status.U} value={dashboard.counts.U} tone="text-sky-200" />
+            <CommanderMetric label={UI.status.N} value={dashboard.counts.N} tone="text-rose-300" />
           </div>
         </section>
 
         <section>
-          <SectionTitle title="Fleet Readiness" />
+          <SectionTitle title={UI.sections.fleetReadiness} />
           <div className="mt-3 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {(["Y", "Q", "N", "U"] as ReadinessStatus[]).map((status) => (
               <div key={status} className={`h-full rounded-2xl border p-5 ${statusTone[status]}`}>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold">{statusText[status]}</p>
+                  <p className="text-sm font-bold">{readinessStatusText(status)}</p>
                   <span className="rounded-lg border border-current/25 px-2 py-1 text-xs font-black">
                     {status === "U" ? "—" : status}
                   </span>
@@ -130,7 +124,7 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <SectionTitle title="Mission Readiness" />
+          <SectionTitle title={UI.sections.missionReadiness} />
           <div className="mt-3 grid auto-rows-fr gap-3 lg:grid-cols-3">
             {dashboard.missions.map((mission) => (
               <div key={mission.id} className={`h-full rounded-2xl border p-5 ${statusTone[mission.status]}`}>
@@ -140,7 +134,7 @@ export default function DashboardPage() {
                     <h2 className="mt-2 text-lg font-bold text-white">{mission.name}</h2>
                   </div>
                   <span className="text-lg font-black">
-                    {mission.status === "U" ? "รอการประเมิน" : mission.status}
+                    {readinessStatusText(mission.status)}
                   </span>
                 </div>
                 <p className="mt-5 text-xs text-slate-400">
@@ -152,7 +146,7 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <SectionTitle title="Major Deficiencies" />
+          <SectionTitle title={UI.sections.majorDeficiencies} />
           <div className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-4">
             {dashboard.deficiencies.map(({ label, value, unknown, detail, icon: Icon }) => (
               <div key={label} className="h-full rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
@@ -169,13 +163,13 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <SectionTitle title="Fleet Status" />
+          <SectionTitle title={UI.sections.fleetStatus} />
           <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-5">
-            <FleetCell label="จำนวนเรือ" value={fleet.length} tone="text-sky-300" />
-            <FleetCell label="พร้อม" value={dashboard.counts.Y} tone="text-emerald-300" />
-            <FleetCell label="จำกัด" value={dashboard.counts.Q} tone="text-amber-300" />
-            <FleetCell label="ไม่พร้อม" value={dashboard.counts.N} tone="text-rose-300" />
-            <FleetCell label="รอการประเมิน" value={dashboard.counts.U} tone="text-sky-200" />
+            <FleetCell label={UI.labels.allShips} value={fleet.length} tone="text-sky-300" />
+            <FleetCell label={UI.status.Y} value={dashboard.counts.Y} tone="text-emerald-300" />
+            <FleetCell label={UI.status.Q} value={dashboard.counts.Q} tone="text-amber-300" />
+            <FleetCell label={UI.status.N} value={dashboard.counts.N} tone="text-rose-300" />
+            <FleetCell label={UI.status.U} value={dashboard.counts.U} tone="text-sky-200" />
           </div>
         </section>
       </div>

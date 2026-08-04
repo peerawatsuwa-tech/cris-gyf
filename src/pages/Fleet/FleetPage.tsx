@@ -8,9 +8,9 @@ import { FleetFilter } from "@/components/fleet/FleetFilter";
 import FleetShipDetailModal from "@/components/fleet/FleetShipDetailModal";
 import { useAuth } from "@/context/AuthContext";
 import { useFleet } from "@/context/FleetContext";
+import { readinessStatusText, UI } from "@/constants/uiText";
 import {
   evaluateShip,
-  statusLabel,
   summarizeFleet,
   type ReadinessStatus,
 } from "@/lib/readinessV027";
@@ -51,19 +51,21 @@ export default function FleetPage() {
       <div className="space-y-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-400">
-            {isDemoShip ? "Ship Edit · Excel Dataset" : "Fleet Status Module · Excel Dataset"}
+            {isDemoShip
+              ? `${UI.navigation.shipEdit} · ${UI.labels.excelDataset}`
+              : `${UI.sections.fleetStatus} · ${UI.labels.excelDataset}`}
           </p>
           <h1 className="text-3xl font-bold text-white">
-            {isDemoShip ? "เลือกเรือที่ต้องการแก้ไข" : "ภาพรวมสถานะกองเรือ"}
+            {isDemoShip ? UI.pages.shipSelection : UI.pages.fleet}
           </h1>
         </div>
 
         {!isDemoShip && <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-          <SummaryCard label="เรือทั้งหมด" value={fleet.length} icon={<ShipWheel className="h-5 w-5" />} color="text-sky-300" />
-          <SummaryCard label="พร้อม (Y)" value={summary.counts.Y} color="text-emerald-300" />
-          <SummaryCard label="มีข้อจำกัด (Q)" value={summary.counts.Q} color="text-amber-300" />
-          <SummaryCard label="ไม่พร้อม (N)" value={summary.counts.N} color="text-rose-300" />
-          <SummaryCard label="รอการประเมิน" value={summary.counts.U} color="text-sky-200" />
+          <SummaryCard label={UI.labels.allShips} value={fleet.length} icon={<ShipWheel className="h-5 w-5" />} color="text-sky-300" />
+          <SummaryCard label={UI.status.Y} value={summary.counts.Y} color="text-emerald-300" />
+          <SummaryCard label={UI.status.Q} value={summary.counts.Q} color="text-amber-300" />
+          <SummaryCard label={UI.status.N} value={summary.counts.N} color="text-rose-300" />
+          <SummaryCard label={UI.status.U} value={summary.counts.U} color="text-sky-200" />
         </div>}
 
         <div className="flex flex-col gap-4 md:flex-row">
@@ -90,7 +92,7 @@ export default function FleetPage() {
             ))
           ) : (
             <div className="col-span-2 rounded-xl border border-slate-800 bg-slate-950/70 p-10 text-center">
-              <p className="text-lg text-slate-400">ไม่พบข้อมูลเรือ</p>
+              <p className="text-lg text-slate-400">ไม่พบข้อมูลเรือ (No Ship Data)</p>
             </div>
           )}
         </div>
@@ -147,14 +149,13 @@ function FleetStatusCard({ ship, onSelect }: { ship: Ship; onSelect: () => void 
           </div>
         </div>
         <p className={`text-right text-sm font-bold ${style.text}`}>
-          {statusLabel(evaluation.status)}
-          {evaluation.status !== "U" ? ` (${evaluation.status})` : ""}
+          {readinessStatusText(evaluation.status)}
         </p>
       </div>
       <div className={`mt-5 flex items-center justify-between gap-3 rounded-lg border p-3 text-sm ${uniqueMissing.length ? "border-sky-700/40 bg-sky-950/30 text-sky-200" : "border-emerald-500/20 bg-emerald-500/5 text-emerald-200"}`}>
         <span className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4 shrink-0" />
-          {uniqueMissing.length ? "รอการประเมิน" : "ประเมินแล้ว"}
+          {uniqueMissing.length ? UI.status.U : UI.labels.assessed}
         </span>
         <strong>
         {uniqueMissing.length

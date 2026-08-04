@@ -3,8 +3,8 @@ import { AlertTriangle, CheckCircle2, Target } from "lucide-react";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useFleet } from "@/context/FleetContext";
+import { readinessStatusText, UI } from "@/constants/uiText";
 import {
-  statusLabel,
   summarizeFleet,
   type ReadinessStatus,
 } from "@/lib/readinessV027";
@@ -25,34 +25,34 @@ export default function AssessmentPage() {
       <div className="space-y-6">
         <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400">
-            Mission Readiness Module · Safe Integration
+            โมดูลความพร้อมตามภารกิจ (Mission Readiness Module) · การเชื่อมต่อที่ผ่านการตรวจสอบ (Verified Integration)
           </p>
           <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-white md:text-3xl">
-                ภาพรวมความพร้อมตามภารกิจหลัก
+                {UI.pages.assessment}
               </h1>
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-sky-500/30 bg-sky-950/30 px-4 py-3 text-sm text-sky-300">
               <Target className="h-5 w-5" />
-              Approved Y / Q / N Calculation Gate
+              เกณฑ์คำนวณ Y / Q / N ที่ได้รับอนุมัติ (Approved Calculation Gate)
             </div>
           </div>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <SummaryCard label="ภารกิจทั้งหมด" value={summary.missions.length} tone="text-sky-400" />
-          <SummaryCard label="เรือพร้อม (Y)" value={summary.counts.Y} tone="text-emerald-400" />
-          <SummaryCard label="เรือมีข้อจำกัด (Q)" value={summary.counts.Q} tone="text-amber-400" />
-          <SummaryCard label="เรือไม่พร้อม (N)" value={summary.counts.N} tone="text-rose-400" />
-          <SummaryCard label="รอการประเมิน" value={summary.counts.U} tone="text-sky-200" />
+          <SummaryCard label={UI.status.Y} value={summary.counts.Y} tone="text-emerald-400" />
+          <SummaryCard label={UI.status.Q} value={summary.counts.Q} tone="text-amber-400" />
+          <SummaryCard label={UI.status.N} value={summary.counts.N} tone="text-rose-400" />
+          <SummaryCard label={UI.status.U} value={summary.counts.U} tone="text-sky-200" />
         </section>
 
         <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
           <div>
             <h2 className="text-xl font-bold text-white">สถานะภารกิจ</h2>
             <p className="mt-1 text-sm text-slate-400">
-              ผลรวมจากข้อมูลปัจจุบันหลัง Merge Cloud Readiness Overlay
+              ผลรวมหลังรวมข้อมูลความพร้อมบนคลาวด์ (Merged Cloud Readiness Overlay)
             </p>
           </div>
 
@@ -72,7 +72,7 @@ export default function AssessmentPage() {
                   </span>
                 </div>
 
-                <p className="mt-4 text-lg font-bold">{statusLabel(mission.status)}</p>
+                <p className="mt-4 text-lg font-bold">{readinessStatusText(mission.status)}</p>
                 <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
                   <Count label="Y" value={mission.distribution.Y} />
                   <Count label="Q" value={mission.distribution.Q} />

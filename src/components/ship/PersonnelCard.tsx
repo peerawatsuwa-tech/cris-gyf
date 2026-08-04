@@ -1,4 +1,5 @@
 import type { Ship } from "@/types/ship";
+import { UI } from "@/constants/uiText";
 
 interface Props {
   ship: Ship;
@@ -16,17 +17,17 @@ export default function PersonnelCard({ ship, onCrewChange }: Props) {
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-      <h3 className="text-lg font-semibold text-white">กำลังพล (Personnel)</h3>
+      <h3 className="text-lg font-semibold text-white">{UI.sections.personnel}</h3>
 
       <div className="mt-5">
-        <label className="text-sm text-slate-400">กำลังพลปัจจุบัน</label>
+        <label className="text-sm text-slate-400">{UI.labels.currentCrew}</label>
         <input
-          aria-label="กำลังพลปัจจุบัน"
+          aria-label={UI.labels.currentCrew}
           type="number"
           min={0}
           max={ship.authorizedCrew}
           value={crew ?? ""}
-          placeholder="รอการประเมิน"
+          placeholder={UI.status.U}
           onChange={(event) => {
             const value = event.target.value;
             onCrewChange?.(value === "" ? null : Number(value));

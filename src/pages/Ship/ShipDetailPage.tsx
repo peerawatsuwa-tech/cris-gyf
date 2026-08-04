@@ -13,9 +13,14 @@ import PersonnelCard from "@/components/ship/PersonnelCard";
 import { useAuth } from "@/context/AuthContext";
 import { useFleet } from "@/context/FleetContext";
 import {
+  equipmentStatusText,
+  readinessDetailText,
+  readinessStatusText,
+  UI,
+} from "@/constants/uiText";
+import {
   evaluateShip,
   missingCurrentFields,
-  statusLabel,
   type ReadinessStatus,
 } from "@/lib/readinessV027";
 import type { CurrentEquipmentStatus, ShipCurrentReadiness } from "@/types/ship";
@@ -43,13 +48,13 @@ const equipmentLabels: Array<[
   >,
   string,
 ]> = [
-  ["propulsion", "ระบบขับเคลื่อน"],
-  ["radar", "Radar"],
-  ["communication", "Communication"],
-  ["navigation", "Navigation"],
-  ["weapon", "Weapon"],
-  ["rhib", "RHIB"],
-  ["eoir", "EO/IR"],
+  ["propulsion", UI.equipment.propulsion],
+  ["radar", UI.equipment.radar],
+  ["communication", UI.equipment.communication],
+  ["navigation", UI.equipment.navigation],
+  ["weapon", UI.equipment.weapon],
+  ["rhib", UI.equipment.rhib],
+  ["eoir", UI.equipment.eoir],
 ];
 
 export default function ShipDetailPage() {
@@ -92,7 +97,7 @@ export default function ShipDetailPage() {
             className="inline-flex items-center gap-2 text-sm text-sky-300 hover:text-sky-200"
           >
             <ArrowLeft className="h-4 w-4" />
-            กลับภาพรวมกองเรือ
+            {UI.actions.backToFleet}
           </Link>
         )}
 
@@ -104,7 +109,7 @@ export default function ShipDetailPage() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-400">
-                  Ship Decision Summary · Excel Dataset
+                  สรุปการตัดสินใจของเรือ (Ship Decision Summary) · {UI.labels.excelDataset}
                 </p>
                 <h1 className="text-3xl font-bold text-white">
                   {ship.hullNumber} · {ship.shipName}
@@ -116,11 +121,10 @@ export default function ShipDetailPage() {
             </div>
             <div className="text-left lg:text-right">
               <p className={`text-lg font-bold ${style.text}`}>
-                {statusLabel(evaluation.status)}
-                {evaluation.status !== "U" ? ` (${evaluation.status})` : ""}
+                {readinessStatusText(evaluation.status)}
               </p>
               <p className="text-sm text-slate-500">
-                C-Rating: — · อัปเดตล่าสุด: {ship.currentReadiness.updatedAt ?? "รอการประเมิน"}
+                C-Rating: — · {UI.labels.lastUpdated}: {ship.currentReadiness.updatedAt ?? UI.status.U}
               </p>
             </div>
           </div>
@@ -128,7 +132,7 @@ export default function ShipDetailPage() {
           <div className="grid gap-4 p-5 lg:grid-cols-3">
             <DecisionBlock label="สถานะปัจจุบัน">
               <p className={`text-xl font-bold ${style.text}`}>
-                {statusLabel(evaluation.status)}
+                {readinessStatusText(evaluation.status)}
               </p>
               <p className="mt-2 text-sm text-slate-400">
                 กำลังพล {ship.currentReadiness.crew ?? "—"}/{ship.authorizedCrew}
@@ -137,7 +141,7 @@ export default function ShipDetailPage() {
             <DecisionBlock label="รายการรอการประเมิน">
               {missing.length ? (
                 <ul className="space-y-1 text-sm text-amber-200">
-                  {missing.map((item) => <li key={item}>• {item}</li>)}
+                  {missing.map((item) => <li key={item}>• {readinessDetailText(item)}</li>)}
                 </ul>
               ) : (
                 <p className="flex items-center gap-2 text-emerald-300">
@@ -145,7 +149,7 @@ export default function ShipDetailPage() {
                 </p>
               )}
             </DecisionBlock>
-            <DecisionBlock label="ข้อขัดข้องสำคัญ">
+            <DecisionBlock label={UI.sections.majorDeficiencies}>
               <p className="text-sm leading-6 text-slate-300">
                 {ship.currentReadiness.majorDeficiencies || "รอการประเมิน"}
               </p>
@@ -155,7 +159,7 @@ export default function ShipDetailPage() {
 
         <div className="grid gap-5">
           <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
-            <h2 className="text-xl font-bold text-white">Current Readiness</h2>
+            <h2 className="text-xl font-bold text-white">{UI.sections.currentReadiness}</h2>
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {equipmentLabels.map(([key, label]) => (
                 <SystemStatus
@@ -166,7 +170,7 @@ export default function ShipDetailPage() {
               ))}
             </div>
             <p className="mt-4 text-xs text-slate-500">
-              Communication Readiness จาก Excel:
+              ความพร้อมของระบบสื่อสารจาก Excel (Communication Readiness):
               {" "}
               {ship.source.communicationReadinessReference === null
                 ? "ไม่มีข้อมูล"
@@ -175,7 +179,7 @@ export default function ShipDetailPage() {
           </section>
 
           <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
-            <h2 className="text-xl font-bold text-white">Personnel</h2>
+            <h2 className="text-xl font-bold text-white">{UI.sections.personnel}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <PersonnelMetric label="กำลังพลปัจจุบัน" value={ship.currentReadiness.crew ?? "—"} />
               <PersonnelMetric label="อัตรากำลัง" value={ship.authorizedCrew} />
@@ -192,7 +196,7 @@ export default function ShipDetailPage() {
           </section>
 
           <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
-            <h2 className="text-xl font-bold text-white">ผลกระทบต่อภารกิจ</h2>
+            <h2 className="text-xl font-bold text-white">{UI.sections.missionImpact}</h2>
             <div className="mt-4 space-y-2">
               {evaluation.missions.map((mission) => {
                 const missionStyle = readinessStyle[mission.status];
@@ -202,14 +206,14 @@ export default function ShipDetailPage() {
                       <p className="font-semibold text-white">{mission.missionName}</p>
                       <p className={`font-bold ${missionStyle.text}`}>
                         {mission.status === "U"
-                          ? "รอการประเมิน"
-                          : `${mission.status} · ${statusLabel(mission.status)}`}
+                          ? UI.status.U
+                          : readinessStatusText(mission.status)}
                       </p>
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {mission.missing.length
-                        ? `ขาด: ${mission.missing.join(", ")}`
-                        : mission.reasons.join(", ")}
+                        ? `ขาด: ${mission.missing.map(readinessDetailText).join(", ")}`
+                        : mission.reasons.map(readinessDetailText).join(", ")}
                     </p>
                   </div>
                 );
@@ -223,9 +227,9 @@ export default function ShipDetailPage() {
           <summary className="flex cursor-pointer list-none items-center justify-between p-5">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-400">
-                Cloud Readiness Overlay
+                ข้อมูลปรับปรุงความพร้อมบนคลาวด์ (Cloud Readiness Overlay)
               </p>
-              <h2 className="text-xl font-bold text-white">ปรับปรุงข้อมูลปัจจุบัน</h2>
+              <h2 className="text-xl font-bold text-white">{UI.sections.shipEdit}</h2>
               <p className="text-sm text-slate-500">
                 ข้อมูลที่กรอกจะไม่ถูกเขียนกลับไปยัง Excel
               </p>
@@ -235,7 +239,7 @@ export default function ShipDetailPage() {
                     saveState === "saved" ? "text-emerald-300" : "text-rose-300"
                   }`}
                 >
-                  {saveState === "saved" ? "บันทึกแล้ว" : "บันทึกไม่สำเร็จ"}
+                  {saveState === "saved" ? UI.save.saved : UI.save.failed}
                 </p>
               )}
             </div>
@@ -254,14 +258,14 @@ export default function ShipDetailPage() {
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <TextField
-                label="ข้อขัดข้องสำคัญ"
+                label={UI.sections.majorDeficiencies}
                 value={ship.currentReadiness.majorDeficiencies}
                 onChange={(majorDeficiencies) =>
                   patchCurrentReadiness(ship.id, { majorDeficiencies })
                 }
               />
               <TextField
-                label="ข้อจำกัดในการปฏิบัติภารกิจ"
+                label={UI.sections.missionLimitations}
                 value={ship.currentReadiness.missionLimitations}
                 onChange={(missionLimitations) =>
                   patchCurrentReadiness(ship.id, { missionLimitations })
@@ -321,7 +325,7 @@ function SystemStatus({ label, value }: { label: string; value: CurrentEquipment
     <div className={`flex justify-between rounded-lg border p-3 text-sm ${style}`}>
       <span>{label}</span>
       <strong className={value === null ? "text-sky-200" : undefined}>
-        {value ?? "รอการประเมิน"}
+        {equipmentStatusText(value)}
       </strong>
     </div>
   );
@@ -362,7 +366,7 @@ function TextField({
         aria-label={label}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="ยังไม่มีข้อมูล"
+        placeholder={UI.labels.noData}
         rows={3}
         className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none placeholder:text-slate-600 focus:border-sky-500"
       />

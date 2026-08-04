@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import { UI } from "@/constants/uiText";
 
 interface Props {
   value: string;
@@ -27,7 +28,8 @@ export default function FleetSearch({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="ค้นหาหมายเลขเรือ หรือชื่อเรือ..."
+        aria-label={UI.labels.searchShip}
+        placeholder="ค้นหาหมายเลขเรือหรือชื่อเรือ (Search Ship)"
 
         className="
           w-full

@@ -29,23 +29,23 @@ export function FleetFilter({
     >
 
       <option value="all">
-        ทั้งหมด
+        ทั้งหมด (All)
       </option>
 
       <option value="Y">
-        พร้อม
+        {UI.status.Y}
       </option>
 
       <option value="Q">
-        จำกัด
+        {UI.status.Q}
       </option>
 
       <option value="N">
-        ไม่พร้อม
+        {UI.status.N}
       </option>
 
       <option value="U">
-        รอการประเมิน
+        {UI.status.U}
       </option>
 
     </select>
@@ -53,3 +53,4 @@ export function FleetFilter({
   );
 
 }
+import { UI } from "@/constants/uiText";

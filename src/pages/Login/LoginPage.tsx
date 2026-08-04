@@ -3,6 +3,7 @@ import { Anchor, Eye, EyeOff, LockKeyhole, ShieldCheck, User } from "lucide-reac
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/context/AuthContext";
+import { UI } from "@/constants/uiText";
 
 type LoginLocationState = {
   from?: { pathname?: string };
@@ -43,12 +44,12 @@ export default function LoginPage() {
             <Anchor className="h-8 w-8" />
           </div>
           <p className="mt-5 text-xs font-bold uppercase tracking-[0.34em] text-sky-400">
-            Royal Thai Navy
+            {UI.organization.navy}
           </p>
-          <p className="mt-1 text-sm text-slate-400">Coast Guard Squadron</p>
+          <p className="mt-1 text-sm text-slate-400">{UI.organization.squadron}</p>
           <h1 className="mt-4 text-4xl font-black tracking-[0.18em] text-white">CRIS</h1>
           <p className="mt-2 text-sm text-slate-300">
-            Coast Guard Readiness Information System
+            {UI.organization.systemName}
           </p>
         </div>
 
@@ -60,12 +61,12 @@ export default function LoginPage() {
             if (result.ok) {
               navigate(from, { replace: true });
             } else {
-              setError(result.error ?? "เข้าสู่ระบบไม่สำเร็จ");
+              setError(result.error ?? UI.auth.failed);
             }
           }}
         >
           <label className="block">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Username</span>
+            <span className="text-xs font-semibold text-slate-400">{UI.auth.username}</span>
             <span className="mt-2 flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/80 px-4 focus-within:border-sky-500">
               <User className="h-5 w-5 text-slate-500" />
               <input
@@ -77,13 +78,13 @@ export default function LoginPage() {
                   setError("");
                 }}
                 className="min-w-0 flex-1 bg-transparent py-3.5 text-white outline-none placeholder:text-slate-600"
-                placeholder="Username"
+                placeholder={UI.auth.username}
               />
             </span>
           </label>
 
           <label className="block">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Password</span>
+            <span className="text-xs font-semibold text-slate-400">{UI.auth.password}</span>
             <span className="mt-2 flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/80 px-4 focus-within:border-sky-500">
               <LockKeyhole className="h-5 w-5 text-slate-500" />
               <input
@@ -95,7 +96,7 @@ export default function LoginPage() {
                   setError("");
                 }}
                 className="min-w-0 flex-1 bg-transparent py-3.5 text-white outline-none placeholder:text-slate-600"
-                placeholder="Password"
+                placeholder={UI.auth.password}
               />
               <button
                 type="button"
@@ -116,9 +117,9 @@ export default function LoginPage() {
                 onChange={(event) => setRemember(event.target.checked)}
                 className="h-4 w-4 accent-sky-500"
               />
-              Remember Me
+              {UI.auth.remember}
             </label>
-            <span className="text-xs text-slate-500">Supabase Authentication</span>
+            <span className="text-xs text-slate-500">การยืนยันตัวตนด้วย Supabase (Supabase Authentication)</span>
           </div>
 
           {error && (
@@ -133,12 +134,12 @@ export default function LoginPage() {
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-sky-950/50 transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
           >
             <ShieldCheck className="h-5 w-5" />
-            {loading ? "Signing in..." : "Login"}
+            {loading ? UI.auth.signingIn : UI.auth.login}
           </button>
         </form>
 
         <footer className="border-t border-slate-800 bg-slate-950/55 px-7 py-4 text-center text-xs font-semibold tracking-wider text-slate-500">
-          Version v0.28 Prototype
+          {UI.labels.version} v0.28 Prototype
         </footer>
       </section>
     </main>

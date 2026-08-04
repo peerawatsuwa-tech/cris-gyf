@@ -12,17 +12,17 @@ import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   {
-    label: UI.dashboard,
+    label: UI.navigation.dashboard,
     icon: BarChart3,
     href: "/dashboard",
   },
   {
-    label: UI.fleet,
+    label: UI.navigation.fleet,
     icon: ShipWheel,
     href: "/fleet",
   },
   {
-    label: UI.assessment,
+    label: UI.navigation.assessment,
     icon: ClipboardList,
     href: "/assessment",
   },
@@ -32,7 +32,7 @@ export function Sidebar() {
   const { logout, profile } = useAuth();
   const visibleNavItems = profile?.role === "ship"
     ? [{
-        label: profile.shipId ? profile.shipId.replace("ship-", "เรือ ") : "Ship Edit",
+        label: profile.shipId ? profile.shipId.replace("ship-", "เรือ ") : UI.navigation.shipEdit,
         icon: ShipWheel,
         href: profile.shipId ? `/ship/${encodeURIComponent(profile.shipId)}` : "/fleet",
       }]
@@ -46,23 +46,19 @@ export function Sidebar() {
 
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400">
 
-          ROYAL THAI NAVY
+          {UI.organization.navy}
 
         </p>
 
         <h2 className="mt-2 text-xl font-bold leading-tight text-white">
 
-          Combat Readiness
-
-          <br />
-
-          Information System
+          {UI.organization.systemName}
 
         </h2>
 
         <p className="mt-3 text-sm text-slate-400">
 
-          Coast Guard Squadron
+          {UI.organization.squadron}
 
           <br />
 
@@ -117,7 +113,7 @@ export function Sidebar() {
 
           <p className="text-xs uppercase tracking-widest text-slate-500">
 
-            System
+            {UI.labels.system}
 
           </p>
 
@@ -129,7 +125,7 @@ export function Sidebar() {
 
           <p className="mt-2 text-xs text-slate-500">
 
-            Official Demonstration
+            {UI.labels.officialDemo}
 
           </p>
 
@@ -143,7 +139,7 @@ export function Sidebar() {
 
           <LogOut className="h-4 w-4" />
 
-          ออกจากระบบ
+          {UI.auth.logout}
 
         </button>
 

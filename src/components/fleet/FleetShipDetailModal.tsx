@@ -3,9 +3,9 @@ import { AlertTriangle, ArrowRight, ShipWheel, X } from "lucide-react";
 
 import {
   evaluateShip,
-  statusLabel,
   type ReadinessStatus,
 } from "@/lib/readinessV027";
+import { readinessDetailText, readinessStatusText, UI } from "@/constants/uiText";
 import type { Ship } from "@/types/ship";
 
 interface Props {
@@ -40,7 +40,7 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-400">
-                Fleet Detail · Excel Dataset
+                รายละเอียดกองเรือ (Fleet Detail) · {UI.labels.excelDataset}
               </p>
               <h2 id="fleet-ship-modal-title" className="text-2xl font-bold text-white">
                 {ship.hullNumber} · {ship.shipName}
@@ -52,7 +52,7 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
             type="button"
             onClick={onClose}
             className="rounded-lg border border-slate-700 p-2 text-slate-300 hover:border-sky-500 hover:text-white"
-            aria-label="ปิดรายละเอียด"
+            aria-label={UI.actions.closeDetail}
           >
             <X className="h-5 w-5" />
           </button>
@@ -61,8 +61,8 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
         <div className="space-y-5 p-5">
           <section className="grid gap-3 sm:grid-cols-4">
             <Metric
-              label="สถานะ"
-              value={statusLabel(evaluation.status)}
+              label={UI.labels.status}
+              value={readinessStatusText(evaluation.status)}
               tone={readinessStyle[evaluation.status]}
             />
             <Metric
@@ -70,35 +70,35 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
               value={evaluation.status === "U" ? "—" : evaluation.status}
               tone={readinessStyle[evaluation.status]}
             />
-            <Metric label="กำลังพล" value={`${ship.currentReadiness.crew ?? "—"}/${ship.authorizedCrew}`} />
+            <Metric label={UI.sections.personnel} value={`${ship.currentReadiness.crew ?? "—"}/${ship.authorizedCrew}`} />
             <Metric label="C-Rating" value="—" />
           </section>
 
           <section className="grid gap-5 lg:grid-cols-2">
             <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
-              <h3 className="mb-3 font-semibold text-white">รายการรอการประเมิน</h3>
+              <h3 className="mb-3 font-semibold text-white">{UI.labels.pendingItems}</h3>
               {missing.length ? (
                 <div className="space-y-2">
                   {missing.map((item) => (
                     <div key={item} className="flex gap-2 rounded-lg bg-amber-500/8 p-3 text-sm text-amber-200">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                      {item}
+                      {readinessDetailText(item)}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-emerald-300">ข้อมูลขั้นต่ำครบ</p>
+                <p className="text-sm text-emerald-300">{UI.labels.completeData}</p>
               )}
             </div>
 
             <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
-              <h3 className="mb-3 font-semibold text-white">ผลต่อภารกิจ</h3>
+              <h3 className="mb-3 font-semibold text-white">{UI.sections.missionImpact}</h3>
               <div className="space-y-2">
                 {evaluation.missions.map((mission) => (
                   <div key={mission.missionId} className="flex items-center justify-between rounded-lg border border-slate-800 px-3 py-2 text-sm">
                     <span className="text-slate-300">{mission.missionName}</span>
                     <span className={`font-bold ${readinessStyle[mission.status]}`}>
-                      {mission.status === "U" ? "รอการประเมิน" : mission.status}
+                      {readinessStatusText(mission.status)}
                     </span>
                   </div>
                 ))}
@@ -111,7 +111,7 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
               to={`/ship/${ship.id}`}
               className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-3 font-semibold text-white hover:bg-sky-500"
             >
-              เปิด Ship Detail <ArrowRight className="h-4 w-4" />
+              {UI.actions.openShipDetail} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>

@@ -1,7 +1,7 @@
 export const ACTIVE_MISSIONS = [
-  { id: "M1", name: "ลาดตระเวน", shortName: "Patrol" },
-  { id: "M2", name: "ตรวจค้น", shortName: "Search & Inspection" },
-  { id: "M4", name: "ค้นหาและช่วยเหลือผู้ประสบภัย", shortName: "Search and Rescue (SAR)" },
+  { id: "M1", name: "ลาดตระเวน (Patrol)", shortName: "Patrol" },
+  { id: "M2", name: "ตรวจค้น (Boarding)", shortName: "Boarding" },
+  { id: "M4", name: "ค้นหาและช่วยเหลือผู้ประสบภัย (Search and Rescue)", shortName: "Search and Rescue (SAR)" },
 ] as const;
 
 export type ActiveMissionId = (typeof ACTIVE_MISSIONS)[number]["id"];

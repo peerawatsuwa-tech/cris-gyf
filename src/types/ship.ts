@@ -22,6 +22,8 @@ export interface ShipCurrentReadiness {
   majorDeficiencies: string;
   missionLimitations: string;
   updatedAt: string | null;
+  assignmentGroup?: import("@/constants/assignments").AssignmentGroup | null;
+  assignmentLocation?: import("@/constants/assignments").AssignmentLocation | null;
 }
 
 export interface ShipSourceReference {

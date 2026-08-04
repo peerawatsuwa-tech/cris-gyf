@@ -2,9 +2,11 @@ import { useMemo, useRef, useState } from "react";
 import { AlertTriangle, Radio, ShipWheel, Users } from "lucide-react";
 
 import ReadinessDrilldownModal, { type DrilldownSelection } from "@/components/dashboard/ReadinessDrilldownModal";
+import DeploymentDrilldownModal, { type DeploymentSelection } from "@/components/dashboard/DeploymentDrilldownModal";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useFleet } from "@/context/FleetContext";
 import { readinessStatusText, UI } from "@/constants/uiText";
+import { ASSIGNMENT_GROUPS, assignmentGroupLabel } from "@/constants/assignments";
 import { aggregateMissionCapability } from "@/lib/missionAggregation";
 import { summarizeFleet, type ReadinessStatus } from "@/lib/readinessV027";
 
@@ -18,6 +20,7 @@ const statusTone: Record<ReadinessStatus, string> = {
 export default function DashboardPage() {
   const { fleet } = useFleet();
   const [selection, setSelection] = useState<DrilldownSelection | null>(null);
+  const [deploymentSelection, setDeploymentSelection] = useState<DeploymentSelection | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   function openDrilldown(next: DrilldownSelection, trigger: HTMLButtonElement) {
@@ -27,6 +30,11 @@ export default function DashboardPage() {
 
   function closeDrilldown() {
     setSelection(null);
+    window.requestAnimationFrame(() => triggerRef.current?.focus());
+  }
+
+  function closeDeployment() {
+    setDeploymentSelection(null);
     window.requestAnimationFrame(() => triggerRef.current?.focus());
   }
 
@@ -101,6 +109,17 @@ export default function DashboardPage() {
           icon: AlertTriangle,
         },
       ],
+    };
+  }, [fleet]);
+
+  const deployment = useMemo(() => {
+    const counts = Object.fromEntries(ASSIGNMENT_GROUPS.map((group) => [group, fleet.filter((ship) => ship.currentReadiness.assignmentGroup === group).length])) as Record<(typeof ASSIGNMENT_GROUPS)[number], number>;
+    const unspecified = fleet.filter((ship) => !ship.currentReadiness.assignmentGroup).length;
+    const operatingAreas = counts["ทรภ.1"] + counts["ทรภ.2"] + counts["ทรภ.3"];
+    return {
+      counts,
+      unspecified,
+      summary: `เรือพร้อมที่ตั้งปกติ ${counts["พร้อมที่ตั้งปกติ"]} ลำ ปฏิบัติราชการในพื้นที่ ทรภ.1–3 รวม ${operatingAreas} ลำ และอยู่ระหว่างซ่อมทำ ${counts["ซ่อมทำ"]} ลำ${unspecified > 0 ? ` · ยังมีเรือ ${unspecified} ลำที่ยังไม่ระบุสถานะการปฏิบัติราชการ` : ""}`,
     };
   }, [fleet]);
 
@@ -215,6 +234,29 @@ export default function DashboardPage() {
         </section>
 
         <section>
+          <SectionTitle title="การกระจายกำลังเรือ (Fleet Deployment)" />
+          <p className="mt-2 rounded-xl border border-sky-800/40 bg-sky-950/20 p-3 text-sm leading-6 text-sky-100">{deployment.summary}</p>
+          <div className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:grid-cols-4">
+            {[...ASSIGNMENT_GROUPS, "unspecified" as const].map((group) => {
+              const value = group === "unspecified" ? deployment.unspecified : deployment.counts[group];
+              return (
+                <button
+                  key={group}
+                  type="button"
+                  onClick={(event) => { triggerRef.current = event.currentTarget; setDeploymentSelection(group); }}
+                  aria-label={`เปิดการกระจายกำลัง ${assignmentGroupLabel(group)} ${value} ลำ`}
+                  className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 text-left transition hover:-translate-y-0.5 hover:border-sky-500/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+                >
+                  <p className="text-sm text-slate-400">{assignmentGroupLabel(group)}</p>
+                  <p className="mt-2 text-3xl font-black text-white">{value}</p>
+                  <p className="text-xs text-slate-500">ลำ · กดเพื่อดูรายละเอียด</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section>
           <SectionTitle title={UI.sections.fleetStatus} />
           <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-5">
             <FleetCell label={UI.labels.allShips} value={fleet.length} tone="text-sky-300" />
@@ -226,6 +268,7 @@ export default function DashboardPage() {
         </section>
       </div>
       {selection && <ReadinessDrilldownModal fleet={fleet} selection={selection} onClose={closeDrilldown} />}
+      {deploymentSelection && <DeploymentDrilldownModal ships={fleet} selection={deploymentSelection} onClose={closeDeployment} />}
     </MainLayout>
   );
 }

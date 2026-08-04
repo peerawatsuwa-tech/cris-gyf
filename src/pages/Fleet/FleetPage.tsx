@@ -10,6 +10,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useFleet } from "@/context/FleetContext";
 import { readinessStatusText, UI } from "@/constants/uiText";
 import {
+  ASSIGNMENT_GROUPS,
+  assignmentGroupLabel,
+  assignmentLabel,
+  type AssignmentGroupFilter,
+} from "@/constants/assignments";
+import {
   evaluateShip,
   summarizeFleet,
   type ReadinessStatus,
@@ -33,6 +39,7 @@ export default function FleetPage() {
   const isDemoShip = profile?.role === "ship" && !profile.shipId;
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [assignmentFilter, setAssignmentFilter] = useState<AssignmentGroupFilter>("all");
   const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
   const summary = useMemo(() => summarizeFleet(fleet), [fleet]);
 
@@ -43,7 +50,10 @@ export default function FleetPage() {
       ship.shipName.toLowerCase().includes(term) ||
       ship.hullNumber.toLowerCase().includes(term);
     const matchFilter = filter === "all" || status === filter;
-    return matchSearch && matchFilter;
+    const group = ship.currentReadiness.assignmentGroup ?? null;
+    const matchAssignment = assignmentFilter === "all" ||
+      (assignmentFilter === "unspecified" ? group === null : group === assignmentFilter);
+    return matchSearch && matchFilter && matchAssignment;
   });
 
   return (
@@ -73,6 +83,16 @@ export default function FleetPage() {
             <FleetSearch value={search} onChange={setSearch} />
           </div>
           <FleetFilter value={filter} onChange={setFilter} />
+          <select
+            aria-label="กรองตามพื้นที่ปฏิบัติราชการ (Assignment Filter)"
+            value={assignmentFilter}
+            onChange={(event) => setAssignmentFilter(event.target.value as AssignmentGroupFilter)}
+            className="rounded-xl border border-slate-800 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-sky-500"
+          >
+            <option value="all">ทุกพื้นที่ (All Assignments)</option>
+            {ASSIGNMENT_GROUPS.map((group) => <option key={group} value={group}>{assignmentGroupLabel(group)}</option>)}
+            <option value="unspecified">ยังไม่ระบุ (Not Specified)</option>
+          </select>
         </div>
 
         <p className="text-sm text-slate-400">
@@ -152,6 +172,7 @@ function FleetStatusCard({ ship, onSelect }: { ship: Ship; onSelect: () => void 
           {readinessStatusText(evaluation.status)}
         </p>
       </div>
+      <p className="mt-3 text-sm text-sky-200/80">{assignmentLabel(ship.currentReadiness.assignmentGroup ?? null, ship.currentReadiness.assignmentLocation ?? null)}</p>
       <div className={`mt-5 flex items-center justify-between gap-3 rounded-lg border p-3 text-sm ${uniqueMissing.length ? "border-sky-700/40 bg-sky-950/30 text-sky-200" : "border-emerald-500/20 bg-emerald-500/5 text-emerald-200"}`}>
         <span className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4 shrink-0" />

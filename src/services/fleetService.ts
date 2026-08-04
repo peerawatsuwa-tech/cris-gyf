@@ -21,6 +21,8 @@ type OverlayRow = {
   major_deficiencies: string;
   mission_limitations: string;
   updated_at: string | null;
+  assignment_group: ShipCurrentReadiness["assignmentGroup"];
+  assignment_location: ShipCurrentReadiness["assignmentLocation"];
 };
 
 export type CloudOverlay = Record<string, ShipCurrentReadiness>;
@@ -42,6 +44,8 @@ function readinessFromRow(row: OverlayRow): ShipCurrentReadiness {
     majorDeficiencies: row.major_deficiencies,
     missionLimitations: row.mission_limitations,
     updatedAt: row.updated_at,
+    assignmentGroup: row.assignment_group,
+    assignmentLocation: row.assignment_location,
   };
 }
 
@@ -59,6 +63,8 @@ function toDatabasePatch(patch: Partial<ShipCurrentReadiness>) {
       major_deficiencies: patch.majorDeficiencies,
       mission_limitations: patch.missionLimitations,
       updated_at: patch.updatedAt,
+      assignment_group: patch.assignmentGroup,
+      assignment_location: patch.assignmentLocation,
     }).filter((entry) => entry[1] !== undefined),
   );
 }

@@ -6,6 +6,7 @@ import {
   type ReadinessStatus,
 } from "@/lib/readinessV027";
 import { readinessDetailText, readinessStatusText, UI } from "@/constants/uiText";
+import { assignmentLabel } from "@/constants/assignments";
 import type { Ship } from "@/types/ship";
 
 interface Props {
@@ -59,6 +60,10 @@ export default function FleetShipDetailModal({ ship, onClose }: Props) {
         </header>
 
         <div className="space-y-5 p-5">
+          <section className="rounded-xl border border-sky-800/50 bg-sky-950/20 p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-sky-400">สถานะการปฏิบัติราชการ (Operational Assignment)</p>
+            <p className="mt-2 font-bold text-white">{assignmentLabel(ship.currentReadiness.assignmentGroup ?? null, ship.currentReadiness.assignmentLocation ?? null)}</p>
+          </section>
           <section className="grid gap-3 sm:grid-cols-4">
             <Metric
               label={UI.labels.status}

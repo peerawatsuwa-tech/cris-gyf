@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   AlertTriangle,
@@ -12,6 +13,15 @@ import EquipmentCard from "@/components/ship/EquipmentCard";
 import PersonnelCard from "@/components/ship/PersonnelCard";
 import { useAuth } from "@/context/AuthContext";
 import { useFleet } from "@/context/FleetContext";
+import {
+  ASSIGNMENT_GROUPS,
+  assignmentGroupLabel,
+  assignmentLabel,
+  assignmentLocations,
+  automaticAssignmentLocation,
+  type AssignmentGroup,
+  type AssignmentLocation,
+} from "@/constants/assignments";
 import {
   equipmentStatusText,
   readinessDetailText,
@@ -158,6 +168,15 @@ export default function ShipDetailPage() {
         </section>
 
         <div className="grid gap-5">
+          <section className="rounded-2xl border border-sky-800/50 bg-sky-950/20 p-5">
+            <h2 className="text-xl font-bold text-white">สถานะการปฏิบัติราชการ (Operational Assignment)</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <PersonnelMetric label="พื้นที่หรือหน่วยหลัก (Assignment Group)" value={ship.currentReadiness.assignmentGroup ? assignmentGroupLabel(ship.currentReadiness.assignmentGroup) : "ยังไม่ระบุ (Not Specified)"} />
+              <PersonnelMetric label="จุดปฏิบัติราชการ (Assignment Location)" value={ship.currentReadiness.assignmentLocation ?? "ยังไม่ระบุ (Not Specified)"} />
+            </div>
+            <p className="mt-3 text-sm text-sky-200/80">{assignmentLabel(ship.currentReadiness.assignmentGroup ?? null, ship.currentReadiness.assignmentLocation ?? null)}</p>
+          </section>
+
           <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
             <h2 className="text-xl font-bold text-white">{UI.sections.currentReadiness}</h2>
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -246,6 +265,13 @@ export default function ShipDetailPage() {
             <ChevronDown className="h-5 w-5 text-sky-400 transition group-open:rotate-180" />
           </summary>
           <div className="space-y-4 border-t border-slate-800 p-5">
+            <OperationalAssignmentEditor
+              group={ship.currentReadiness.assignmentGroup ?? null}
+              location={ship.currentReadiness.assignmentLocation ?? null}
+              onChange={(assignmentGroup, assignmentLocation) =>
+                patchCurrentReadiness(ship.id, { assignmentGroup, assignmentLocation })
+              }
+            />
             <div className="grid gap-4 lg:grid-cols-2">
               <PersonnelCard
                 ship={ship}
@@ -300,6 +326,71 @@ export default function ShipDetailPage() {
         )}
       </div>
     </MainLayout>
+  );
+}
+
+function OperationalAssignmentEditor({
+  group,
+  location,
+  onChange,
+}: {
+  group: AssignmentGroup | null;
+  location: AssignmentLocation | null;
+  onChange: (group: AssignmentGroup | null, location: AssignmentLocation | null) => void;
+}) {
+  const [draftGroup, setDraftGroup] = useState(group);
+  const [draftLocation, setDraftLocation] = useState(location);
+  useEffect(() => { setDraftGroup(group); setDraftLocation(location); }, [group, location]);
+  const locations = assignmentLocations(draftGroup);
+  const fixedLocation = automaticAssignmentLocation(draftGroup);
+  const hideLocation = draftGroup === "มรภ.ฐท.สส.";
+  const valid = draftGroup === null || hideLocation || fixedLocation !== null || draftLocation !== null;
+  return (
+    <section className="rounded-xl border border-sky-800/50 bg-sky-950/20 p-4">
+      <h3 className="font-bold text-white">สถานะการปฏิบัติราชการ (Operational Assignment)</h3>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm text-slate-400">พื้นที่หรือหน่วยหลัก (Assignment Group)</span>
+          <select
+            aria-label="พื้นที่หรือหน่วยหลัก (Assignment Group)"
+            value={draftGroup ?? ""}
+            onChange={(event) => {
+              const nextGroup = event.target.value ? event.target.value as AssignmentGroup : null;
+              setDraftGroup(nextGroup);
+              setDraftLocation(automaticAssignmentLocation(nextGroup));
+            }}
+            className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none focus:border-sky-500"
+          >
+            <option value="">ยังไม่ระบุ (Not Specified)</option>
+            {ASSIGNMENT_GROUPS.map((item) => <option key={item} value={item}>{assignmentGroupLabel(item)}</option>)}
+          </select>
+        </label>
+        {!hideLocation && (
+          <label className="block">
+            <span className="text-sm text-slate-400">จุดปฏิบัติราชการ (Assignment Location)</span>
+            <select
+              aria-label="จุดปฏิบัติราชการ (Assignment Location)"
+              value={draftLocation ?? fixedLocation ?? ""}
+              disabled={!draftGroup || Boolean(fixedLocation)}
+              onChange={(event) => setDraftLocation(event.target.value ? event.target.value as AssignmentLocation : null)}
+              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none focus:border-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="">เลือกจุดปฏิบัติราชการ</option>
+              {locations.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+        )}
+      </div>
+      <button
+        type="button"
+        disabled={!valid}
+        onClick={() => onChange(draftGroup, draftLocation ?? fixedLocation)}
+        className="mt-4 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        บันทึกสถานะการปฏิบัติราชการ (Save Assignment)
+      </button>
+      {!valid && <p className="mt-2 text-xs text-amber-200">กรุณาเลือกจุดปฏิบัติราชการให้ตรงกับพื้นที่หรือหน่วยหลัก</p>}
+    </section>
   );
 }
 

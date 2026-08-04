@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AlertTriangle, Radio, ShipWheel, Users } from "lucide-react";
 
+import ReadinessDrilldownModal, { type DrilldownSelection } from "@/components/dashboard/ReadinessDrilldownModal";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useFleet } from "@/context/FleetContext";
 import { readinessStatusText, UI } from "@/constants/uiText";
@@ -15,6 +16,18 @@ const statusTone: Record<ReadinessStatus, string> = {
 
 export default function DashboardPage() {
   const { fleet } = useFleet();
+  const [selection, setSelection] = useState<DrilldownSelection | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  function openDrilldown(next: DrilldownSelection, trigger: HTMLButtonElement) {
+    triggerRef.current = trigger;
+    setSelection(next);
+  }
+
+  function closeDrilldown() {
+    setSelection(null);
+    window.requestAnimationFrame(() => triggerRef.current?.focus());
+  }
 
   const dashboard = useMemo(() => {
     const summary = summarizeFleet(fleet);
@@ -23,6 +36,7 @@ export default function DashboardPage() {
       ...summary,
       deficiencies: [
         {
+          key: "crew" as const,
           label: "กำลังพล",
           value: fleet.filter(
             (ship) =>
@@ -34,6 +48,7 @@ export default function DashboardPage() {
           icon: Users,
         },
         {
+          key: "rhib" as const,
           label: "RHIB",
           value: current.filter(
             (item) => item.rhib === "Limited" || item.rhib === "Not Ready",
@@ -43,6 +58,7 @@ export default function DashboardPage() {
           icon: ShipWheel,
         },
         {
+          key: "radar" as const,
           label: UI.equipment.radar,
           value: current.filter(
             (item) => item.radar === "Limited" || item.radar === "Not Ready",
@@ -52,6 +68,7 @@ export default function DashboardPage() {
           icon: Radio,
         },
         {
+          key: "critical" as const,
           label: "อุปกรณ์สำคัญ",
           value: current.filter((item) =>
             [
@@ -109,7 +126,13 @@ export default function DashboardPage() {
           <SectionTitle title={UI.sections.fleetReadiness} />
           <div className="mt-3 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {(["Y", "Q", "N", "U"] as ReadinessStatus[]).map((status) => (
-              <div key={status} className={`h-full rounded-2xl border p-5 ${statusTone[status]}`}>
+              <button
+                key={status}
+                type="button"
+                onClick={(event) => openDrilldown({ kind: "status", status }, event.currentTarget)}
+                aria-label={`เปิดรายละเอียด ${readinessStatusText(status)} ${dashboard.counts[status]} ลำ`}
+                className={`h-full cursor-pointer rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 hover:brightness-125 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 ${statusTone[status]}`}
+              >
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-bold">{readinessStatusText(status)}</p>
                   <span className="rounded-lg border border-current/25 px-2 py-1 text-xs font-black">
@@ -118,7 +141,8 @@ export default function DashboardPage() {
                 </div>
                 <p className="mt-3 text-4xl font-black">{dashboard.counts[status]}</p>
                 <p className="mt-1 text-xs text-slate-500">ลำ</p>
-              </div>
+                <p className="mt-3 text-xs font-semibold text-sky-300/80">กดเพื่อดูรายละเอียด (View Detail)</p>
+              </button>
             ))}
           </div>
         </section>
@@ -127,7 +151,13 @@ export default function DashboardPage() {
           <SectionTitle title={UI.sections.missionReadiness} />
           <div className="mt-3 grid auto-rows-fr gap-3 lg:grid-cols-3">
             {dashboard.missions.map((mission) => (
-              <div key={mission.id} className={`h-full rounded-2xl border p-5 ${statusTone[mission.status]}`}>
+              <button
+                key={mission.id}
+                type="button"
+                onClick={(event) => openDrilldown({ kind: "mission", missionId: mission.id }, event.currentTarget)}
+                aria-label={`เปิดรายละเอียดภารกิจ ${mission.name}`}
+                className={`h-full cursor-pointer rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 hover:brightness-125 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 ${statusTone[mission.status]}`}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-widest text-sky-400">{mission.id}</p>
@@ -140,7 +170,8 @@ export default function DashboardPage() {
                 <p className="mt-5 text-xs text-slate-400">
                   Y {mission.distribution.Y} · Q {mission.distribution.Q} · N {mission.distribution.N} · รอ {mission.distribution.U}
                 </p>
-              </div>
+                <p className="mt-3 text-xs font-semibold text-sky-300/80">กดเพื่อดูรายละเอียด (View Detail)</p>
+              </button>
             ))}
           </div>
         </section>
@@ -148,8 +179,14 @@ export default function DashboardPage() {
         <section>
           <SectionTitle title={UI.sections.majorDeficiencies} />
           <div className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-4">
-            {dashboard.deficiencies.map(({ label, value, unknown, detail, icon: Icon }) => (
-              <div key={label} className="h-full rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
+            {dashboard.deficiencies.map(({ key, label, value, unknown, detail, icon: Icon }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={(event) => openDrilldown({ kind: "deficiency", key, title: label }, event.currentTarget)}
+                aria-label={`เปิดรายละเอียด ${label} ${value} ลำ`}
+                className="h-full cursor-pointer rounded-2xl border border-slate-800 bg-slate-950/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-sky-600/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+              >
                 <div className="flex items-center justify-between text-slate-500">
                   <p className="text-sm font-semibold">{label}</p>
                   <Icon className="h-5 w-5 text-amber-400" />
@@ -157,7 +194,8 @@ export default function DashboardPage() {
                 <p className="mt-3 text-3xl font-black text-white">{value}</p>
                 <p className="mt-1 text-xs text-slate-500">{detail}</p>
                 <p className="mt-2 text-xs text-sky-300/70">รอการประเมิน {unknown} ลำ</p>
-              </div>
+                <p className="mt-3 text-xs font-semibold text-sky-300/80">กดเพื่อดูรายละเอียด (View Detail)</p>
+              </button>
             ))}
           </div>
         </section>
@@ -173,6 +211,7 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
+      {selection && <ReadinessDrilldownModal fleet={fleet} selection={selection} onClose={closeDrilldown} />}
     </MainLayout>
   );
 }

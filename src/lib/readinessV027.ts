@@ -34,7 +34,7 @@ const SYSTEM_LABELS: Record<CurrentSystemKey, string> = {
   eoir: "EO/IR",
 };
 
-const REQUIRED_SYSTEMS: Record<ActiveMissionId, CurrentSystemKey[]> = {
+export const REQUIRED_SYSTEMS: Record<ActiveMissionId, CurrentSystemKey[]> = {
   M1: ["propulsion", "radar", "communication", "navigation"],
   M2: ["propulsion", "communication", "navigation", "rhib"],
   M4: ["propulsion", "radar", "communication", "navigation", "rhib"],

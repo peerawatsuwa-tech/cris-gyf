@@ -40,6 +40,14 @@ const REQUIRED_SYSTEMS: Record<ActiveMissionId, CurrentSystemKey[]> = {
   M4: ["propulsion", "radar", "communication", "navigation", "rhib"],
 };
 
+// The imported fleet workbook uses "-" to mean that no limitation was
+// recorded. Treating that placeholder as operational text incorrectly forces
+// otherwise-ready ships into Q.
+function hasMissionLimitation(value: string): boolean {
+  const normalized = value.trim();
+  return normalized.length > 0 && normalized !== "-";
+}
+
 export function evaluateMission(
   ship: Ship,
   missionId: ActiveMissionId,
@@ -103,12 +111,14 @@ export function evaluateMission(
   if (
     crewRatio < 0.9 ||
     limitedCount > 1 ||
-    current.missionLimitations.trim().length > 0
+    hasMissionLimitation(current.missionLimitations)
   ) {
     const reasons = [];
     if (crewRatio < 0.9) reasons.push("กำลังพลปัจจุบันอยู่ระหว่าง 75–89%");
     if (limitedCount > 1) reasons.push("ระบบสำคัญเป็น Limited มากกว่า 1 รายการ");
-    if (current.missionLimitations.trim()) reasons.push("มีข้อจำกัดในการปฏิบัติภารกิจ");
+    if (hasMissionLimitation(current.missionLimitations)) {
+      reasons.push("มีข้อจำกัดในการปฏิบัติภารกิจ");
+    }
     return result(missionId, mission.name, "Q", reasons);
   }
 

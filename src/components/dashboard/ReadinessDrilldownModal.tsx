@@ -19,6 +19,7 @@ import {
   SYSTEM_LABELS,
   type DeficiencyKey,
 } from "@/lib/readinessDetailPresenter";
+import { aggregateMissionCapability, type MissionCapability } from "@/lib/missionAggregation";
 import { evaluateMission, evaluateShip, REQUIRED_SYSTEMS, summarizeFleet, type ReadinessStatus } from "@/lib/readinessV027";
 import type { Ship } from "@/types/ship";
 
@@ -83,6 +84,7 @@ export default function ReadinessDrilldownModal({
   const mission = selection.kind === "mission"
     ? summary.missions.find((item) => item.id === selection.missionId)
     : null;
+  const missionCapability = mission ? aggregateMissionCapability(mission.distribution) : null;
   const updatedAt = latestUpdate(detail.ships);
   const percentage = fleet.length ? (detail.ships.length / fleet.length) * 100 : 0;
 
@@ -104,7 +106,7 @@ export default function ReadinessDrilldownModal({
             <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-400">รายละเอียดความพร้อม (Readiness Detail)</p>
             <h2 id="readiness-drilldown-title" className="mt-1 text-xl font-black text-white sm:text-2xl">{detail.title}</h2>
             <p className="mt-1 text-sm text-slate-400">
-              {selection.kind === "mission" ? `สถานะภาพรวม ${readinessStatusText(mission!.status)}` : `${detail.ships.length} ลำ จาก ${fleet.length} ลำ · ${percentage.toFixed(1)}%`}
+              {selection.kind === "mission" ? `สถานะภาพรวม ${readinessStatusText(missionCapability!.status)}` : `${detail.ships.length} ลำ จาก ${fleet.length} ลำ · ${percentage.toFixed(1)}%`}
               {updatedAt ? ` · ${UI.labels.lastUpdated}: ${formatDate(updatedAt)}` : ""}
             </p>
           </div>
@@ -114,6 +116,9 @@ export default function ReadinessDrilldownModal({
         </header>
 
         <div className="overflow-y-auto overscroll-contain p-4 sm:p-5">
+          {missionCapability && (
+            <CommanderAssessment capability={missionCapability} notReady={mission!.distribution.N} />
+          )}
           <InsightBar counts={summary.counts} total={fleet.length} />
 
           {selection.kind === "mission" && (
@@ -144,6 +149,29 @@ export default function ReadinessDrilldownModal({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function CommanderAssessment({ capability, notReady }: { capability: MissionCapability; notReady: number }) {
+  return (
+    <section className="mb-4 rounded-xl border border-emerald-500/35 bg-emerald-500/5 p-4" aria-label="การประเมินสำหรับผู้บังคับบัญชา (Commander Assessment)">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">การประเมินสำหรับผู้บังคับบัญชา (Commander Assessment)</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <AssessmentMetric label="Mission Capability" value={capability.level} />
+        <AssessmentMetric label="Deployable Fleet" value={`${capability.deployable} Ships`} detail={`${capability.readyPercent.toFixed(1)}%`} />
+        <AssessmentMetric label="Recommendation" value={capability.recommendation} detail={notReady > 0 ? `ควรเร่งแก้ไขเรือไม่พร้อม ${notReady} ลำ` : undefined} compact />
+      </div>
+    </section>
+  );
+}
+
+function AssessmentMetric({ label, value, detail, compact = false }: { label: string; value: string; detail?: string; compact?: boolean }) {
+  return (
+    <div className="rounded-lg border border-slate-700/70 bg-slate-950/45 p-3">
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className={`mt-1 font-black text-white ${compact ? "text-sm leading-5" : "text-xl"}`}>{value}</p>
+      {detail && <p className="mt-1 text-xs text-amber-200">{detail}</p>}
     </div>
   );
 }

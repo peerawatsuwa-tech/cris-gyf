@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Target } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useFleet } from "@/context/FleetContext";
 import { readinessStatusText, UI } from "@/constants/uiText";
+import { aggregateMissionCapability } from "@/lib/missionAggregation";
 import {
   summarizeFleet,
   type ReadinessStatus,
@@ -18,7 +19,16 @@ const statusClasses: Record<ReadinessStatus, string> = {
 
 export default function AssessmentPage() {
   const { fleet } = useFleet();
-  const summary = useMemo(() => summarizeFleet(fleet), [fleet]);
+  const summary = useMemo(() => {
+    const current = summarizeFleet(fleet);
+    return {
+      ...current,
+      missions: current.missions.map((mission) => {
+        const capability = aggregateMissionCapability(mission.distribution);
+        return { ...mission, status: capability.status, capability };
+      }),
+    };
+  }, [fleet]);
 
   return (
     <MainLayout>
@@ -73,6 +83,11 @@ export default function AssessmentPage() {
                 </div>
 
                 <p className="mt-4 text-lg font-bold">{readinessStatusText(mission.status)}</p>
+                <div className="mt-3 rounded-lg border border-current/20 bg-slate-950/40 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Deployable Fleet</p>
+                  <p className="mt-1 text-lg font-black text-white">{mission.capability.deployable} Ships · {mission.capability.readyPercent.toFixed(1)}%</p>
+                  <p className="mt-1 text-xs text-slate-300">{mission.capability.recommendation}</p>
+                </div>
                 <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
                   <Count label="Y" value={mission.distribution.Y} />
                   <Count label="Q" value={mission.distribution.Q} />

@@ -5,6 +5,7 @@ import ReadinessDrilldownModal, { type DrilldownSelection } from "@/components/d
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useFleet } from "@/context/FleetContext";
 import { readinessStatusText, UI } from "@/constants/uiText";
+import { aggregateMissionCapability } from "@/lib/missionAggregation";
 import { summarizeFleet, type ReadinessStatus } from "@/lib/readinessV027";
 
 const statusTone: Record<ReadinessStatus, string> = {
@@ -34,6 +35,10 @@ export default function DashboardPage() {
     const current = fleet.map((ship) => ship.currentReadiness);
     return {
       ...summary,
+      missions: summary.missions.map((mission) => {
+        const capability = aggregateMissionCapability(mission.distribution);
+        return { ...mission, status: capability.status, capability };
+      }),
       deficiencies: [
         {
           key: "crew" as const,
@@ -170,6 +175,15 @@ export default function DashboardPage() {
                 <p className="mt-5 text-xs text-slate-400">
                   Y {mission.distribution.Y} · Q {mission.distribution.Q} · N {mission.distribution.N} · รอ {mission.distribution.U}
                 </p>
+                <div className="mt-3 rounded-lg border border-current/20 bg-slate-950/35 p-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Deployable Fleet</p>
+                  <div className="mt-1 flex items-baseline justify-between gap-2">
+                    <p className="text-xl font-black text-white">{mission.capability.deployable} Ships</p>
+                    <p className="text-lg font-black">{mission.capability.readyPercent.toFixed(1)}%</p>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-300">{mission.capability.recommendation}</p>
+                  <p className="text-xs text-slate-500">พร้อมปฏิบัติ {mission.capability.deployable} จาก {mission.capability.assessed} ลำ</p>
+                </div>
                 <p className="mt-3 text-xs font-semibold text-sky-300/80">กดเพื่อดูรายละเอียด (View Detail)</p>
               </button>
             ))}

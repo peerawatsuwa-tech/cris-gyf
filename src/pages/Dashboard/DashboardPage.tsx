@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { AlertTriangle, Radio, ShipWheel, Users } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 import ReadinessDrilldownModal, { type DrilldownSelection } from "@/components/dashboard/ReadinessDrilldownModal";
 import DeploymentDrilldownModal, { type DeploymentSelection } from "@/components/dashboard/DeploymentDrilldownModal";
@@ -9,6 +9,10 @@ import { readinessStatusText, UI } from "@/constants/uiText";
 import { ASSIGNMENT_GROUPS, assignmentGroupLabel } from "@/constants/assignments";
 import { aggregateMissionCapability } from "@/lib/missionAggregation";
 import { summarizeFleet, type ReadinessStatus } from "@/lib/readinessV027";
+import {
+  EQUIPMENT_SYSTEMS,
+  systemDeficiencyCounts,
+} from "@/constants/equipmentCatalog";
 
 const statusTone: Record<ReadinessStatus, string> = {
   Y: "text-emerald-300 border-emerald-500/30 bg-emerald-500/5",
@@ -40,75 +44,30 @@ export default function DashboardPage() {
 
   const dashboard = useMemo(() => {
     const summary = summarizeFleet(fleet);
-    const current = fleet.map((ship) => ship.currentReadiness);
+    const missions = [
+      ...summary.missions,
+      {
+        id: "M5" as const,
+        name: "สนับสนุนภารกิจอื่น ๆ (Other Mission Support)",
+        distribution: summary.counts,
+      },
+    ];
     return {
       ...summary,
-      missions: summary.missions.map((mission) => {
+      missions: missions.map((mission) => {
         const capability = aggregateMissionCapability(mission.distribution);
         return { ...mission, status: capability.status, capability };
       }),
-      deficiencies: [
-        {
-          key: "crew" as const,
-          label: "กำลังพล",
-          value: fleet.filter(
-            (ship) =>
-              ship.currentReadiness.crew !== null &&
-              ship.currentReadiness.crew / ship.authorizedCrew < 0.9,
-          ).length,
-          unknown: current.filter((item) => item.crew === null).length,
-          detail: "ลำต่ำกว่า 90%",
-          icon: Users,
-        },
-        {
-          key: "rhib" as const,
-          label: "RHIB",
-          value: current.filter(
-            (item) => item.rhib === "Limited" || item.rhib === "Not Ready",
-          ).length,
-          unknown: current.filter((item) => item.rhib === null).length,
-          detail: "ลำมีข้อจำกัด",
-          icon: ShipWheel,
-        },
-        {
-          key: "radar" as const,
-          label: UI.equipment.radar,
-          value: current.filter(
-            (item) => item.radar === "Limited" || item.radar === "Not Ready",
-          ).length,
-          unknown: current.filter((item) => item.radar === null).length,
-          detail: "ลำมีข้อจำกัด",
-          icon: Radio,
-        },
-        {
-          key: "critical" as const,
-          label: "อุปกรณ์สำคัญ",
-          value: current.filter((item) =>
-            [
-              item.propulsion,
-              item.radar,
-              item.communication,
-              item.navigation,
-              item.weapon,
-              item.rhib,
-              item.eoir,
-            ].some((status) => status === "Not Ready"),
-          ).length,
-          unknown: current.filter((item) =>
-            [
-              item.propulsion,
-              item.radar,
-              item.communication,
-              item.navigation,
-              item.weapon,
-              item.rhib,
-              item.eoir,
-            ].some((status) => status === null),
-          ).length,
-          detail: "ลำมีระบบไม่พร้อม",
-          icon: AlertTriangle,
-        },
-      ],
+      deficiencies: EQUIPMENT_SYSTEMS.map((system) => {
+        const perShip = fleet.map((ship) => systemDeficiencyCounts(ship.currentReadiness.equipmentDetails, system.id));
+        return {
+          key: `detail:${system.id}` as const,
+          label: system.label,
+          limitedShips: perShip.filter((counts) => counts.limited > 0).length,
+          criticalShips: perShip.filter((counts) => counts.critical > 0).length,
+          unknown: perShip.filter((counts) => counts.recorded < system.items.length).length,
+        };
+      }),
     };
   }, [fleet]);
 
@@ -173,12 +132,17 @@ export default function DashboardPage() {
 
         <section>
           <SectionTitle title={UI.sections.missionReadiness} />
-          <div className="mt-3 grid auto-rows-fr gap-3 lg:grid-cols-3">
+          <div className="mt-3 grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-4">
             {dashboard.missions.map((mission) => (
               <button
                 key={mission.id}
                 type="button"
-                onClick={(event) => openDrilldown({ kind: "mission", missionId: mission.id }, event.currentTarget)}
+                onClick={(event) => openDrilldown(
+                  mission.id === "M5"
+                    ? { kind: "supportMission" }
+                    : { kind: "mission", missionId: mission.id },
+                  event.currentTarget,
+                )}
                 aria-label={`เปิดรายละเอียดภารกิจ ${mission.name}`}
                 className={`h-full cursor-pointer rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 hover:brightness-125 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 ${statusTone[mission.status]}`}
               >
@@ -212,20 +176,22 @@ export default function DashboardPage() {
         <section>
           <SectionTitle title={UI.sections.majorDeficiencies} />
           <div className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-4">
-            {dashboard.deficiencies.map(({ key, label, value, unknown, detail, icon: Icon }) => (
+            {dashboard.deficiencies.map(({ key, label, limitedShips, criticalShips, unknown }) => (
               <button
                 key={label}
                 type="button"
                 onClick={(event) => openDrilldown({ kind: "deficiency", key, title: label }, event.currentTarget)}
-                aria-label={`เปิดรายละเอียด ${label} ${value} ลำ`}
+                aria-label={`เปิดรายละเอียด ${label} Q ${limitedShips} ลำ N ${criticalShips} ลำ`}
                 className="h-full cursor-pointer rounded-2xl border border-slate-800 bg-slate-950/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-sky-600/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
               >
                 <div className="flex items-center justify-between text-slate-500">
                   <p className="text-sm font-semibold">{label}</p>
-                  <Icon className="h-5 w-5 text-amber-400" />
+                  <AlertTriangle className="h-5 w-5 text-amber-400" />
                 </div>
-                <p className="mt-3 text-3xl font-black text-white">{value}</p>
-                <p className="mt-1 text-xs text-slate-500">{detail}</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-amber-500/5 p-2"><p className="text-xs text-amber-300">Operational Limitation (Q)</p><p className="text-2xl font-black text-amber-200">{limitedShips}</p></div>
+                  <div className="rounded-lg bg-rose-500/5 p-2"><p className="text-xs text-rose-300">Mission Critical (N)</p><p className="text-2xl font-black text-rose-200">{criticalShips}</p></div>
+                </div>
                 <p className="mt-2 text-xs text-sky-300/70">รอการประเมิน {unknown} ลำ</p>
                 <p className="mt-3 text-xs font-semibold text-sky-300/80">กดเพื่อดูรายละเอียด (View Detail)</p>
               </button>

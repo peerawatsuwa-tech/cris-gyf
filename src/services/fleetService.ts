@@ -23,6 +23,11 @@ type OverlayRow = {
   updated_at: string | null;
   assignment_group: ShipCurrentReadiness["assignmentGroup"];
   assignment_location: ShipCurrentReadiness["assignmentLocation"];
+  personnel_officers: number | null;
+  personnel_senior_ncos: number | null;
+  personnel_petty_officers: number | null;
+  personnel_conscripts: number | null;
+  equipment_details: ShipCurrentReadiness["equipmentDetails"] | null;
 };
 
 export type CloudOverlay = Record<string, ShipCurrentReadiness>;
@@ -46,6 +51,13 @@ function readinessFromRow(row: OverlayRow): ShipCurrentReadiness {
     updatedAt: row.updated_at,
     assignmentGroup: row.assignment_group,
     assignmentLocation: row.assignment_location,
+    personnel: {
+      officers: row.personnel_officers,
+      seniorNcos: row.personnel_senior_ncos,
+      pettyOfficers: row.personnel_petty_officers,
+      conscripts: row.personnel_conscripts,
+    },
+    equipmentDetails: row.equipment_details ?? {},
   };
 }
 
@@ -62,9 +74,10 @@ function toDatabasePatch(patch: Partial<ShipCurrentReadiness>) {
       eoir: patch.eoir,
       major_deficiencies: patch.majorDeficiencies,
       mission_limitations: patch.missionLimitations,
-      updated_at: patch.updatedAt,
       assignment_group: patch.assignmentGroup,
       assignment_location: patch.assignmentLocation,
+      personnel: patch.personnel,
+      equipment_details: patch.equipmentDetails,
     }).filter((entry) => entry[1] !== undefined),
   );
 }

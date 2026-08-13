@@ -22,6 +22,12 @@ import {
   type AssignmentGroup,
   type AssignmentLocation,
 } from "@/constants/assignments";
+import { AUTHORIZED_PERSONNEL, PERSONNEL_FIELDS } from "@/constants/personnelCatalog";
+import {
+  EQUIPMENT_SYSTEMS,
+  equipmentItemKey,
+  systemDeficiencyCounts,
+} from "@/constants/equipmentCatalog";
 import {
   equipmentStatusText,
   readinessDetailText,
@@ -134,7 +140,7 @@ export default function ShipDetailPage() {
                 {readinessStatusText(evaluation.status)}
               </p>
               <p className="text-sm text-slate-500">
-                C-Rating: — · {UI.labels.lastUpdated}: {ship.currentReadiness.updatedAt ?? UI.status.U}
+                C-Rating: — · {UI.labels.lastUpdated}: {formatTrustedTimestamp(ship.currentReadiness.updatedAt)}
               </p>
             </div>
           </div>
@@ -198,8 +204,42 @@ export default function ShipDetailPage() {
           </section>
 
           <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+            <h2 className="text-xl font-bold text-white">ข้อขัดข้องรายระบบจาก Excel</h2>
+            <p className="mt-1 text-xs text-slate-500">Operational Limitation (Q) และ Mission Critical (N) เป็นข้อมูลรายงานเพิ่มเติม ไม่เปลี่ยนผล Readiness รายลำ</p>
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              {EQUIPMENT_SYSTEMS.map((system) => {
+                const counts = systemDeficiencyCounts(ship.currentReadiness.equipmentDetails, system.id);
+                const affected = system.items
+                  .map((item) => ({ item, status: ship.currentReadiness.equipmentDetails?.[equipmentItemKey(system.id, item)] ?? null }))
+                  .filter(({ status }) => status === "Limited" || status === "Not Ready");
+                return (
+                  <div key={system.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div><p className="font-semibold text-white">{system.label}</p><p className="text-xs text-slate-500">Excel: {system.sourceSheet}</p></div>
+                      <p className="shrink-0 text-xs"><span className="text-amber-300">Q {counts.limited}</span> · <span className="text-rose-300">N {counts.critical}</span></p>
+                    </div>
+                    <ul className="mt-3 space-y-1 text-xs text-slate-300">
+                      {affected.length
+                        ? affected.map(({ item, status }) => <li key={item}>• {item}: {status === "Limited" ? "Operational Limitation (Q)" : "Mission Critical (N)"}</li>)
+                        : <li className="text-sky-200">{counts.recorded === system.items.length ? "ไม่พบข้อขัดข้อง" : "รอการประเมินรายการอุปกรณ์"}</li>}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
             <h2 className="text-xl font-bold text-white">{UI.sections.personnel}</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {PERSONNEL_FIELDS.map(({ key, label }) => (
+                <PersonnelMetric
+                  key={key}
+                  label={label}
+                  value={`${ship.currentReadiness.personnel?.[key] ?? "—"} / ${AUTHORIZED_PERSONNEL[ship.hullNumber]?.[key] ?? "—"}`}
+                  pending={ship.currentReadiness.personnel?.[key] === null || ship.currentReadiness.personnel?.[key] === undefined}
+                />
+              ))}
               <PersonnelMetric label="กำลังพลปัจจุบัน" value={ship.currentReadiness.crew ?? "—"} />
               <PersonnelMetric label="อัตรากำลัง" value={ship.authorizedCrew} />
               <PersonnelMetric
@@ -275,11 +315,12 @@ export default function ShipDetailPage() {
             <div className="grid gap-4 lg:grid-cols-2">
               <PersonnelCard
                 ship={ship}
-                onCrewChange={(crew) => patchCurrentReadiness(ship.id, { crew })}
+                onPersonnelChange={(personnel) => patchCurrentReadiness(ship.id, { personnel })}
               />
               <EquipmentCard
                 ship={ship}
                 onEquipmentChange={(patch) => patchCurrentReadiness(ship.id, patch)}
+                onEquipmentDetailsChange={(equipmentDetails) => patchCurrentReadiness(ship.id, { equipmentDetails })}
               />
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
@@ -298,22 +339,9 @@ export default function ShipDetailPage() {
                 }
               />
             </div>
-            <label className="block max-w-sm">
-              <span className="text-sm text-slate-400">วันที่ปรับปรุงข้อมูล</span>
-              <input
-                aria-label="วันที่ปรับปรุงข้อมูล"
-                type="text"
-                inputMode="numeric"
-                placeholder="YYYY-MM-DD"
-                value={ship.currentReadiness.updatedAt ?? ""}
-                onChange={(event) =>
-                  patchCurrentReadiness(ship.id, {
-                    updatedAt: event.target.value || null,
-                  })
-                }
-                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none focus:border-sky-500"
-              />
-            </label>
+            <p className="rounded-lg border border-sky-800/40 bg-sky-950/20 p-3 text-xs text-sky-100">
+              {UI.labels.lastUpdated}: {formatTrustedTimestamp(ship.currentReadiness.updatedAt)} · กำหนดโดยฐานข้อมูลออนไลน์อัตโนมัติ
+            </p>
           </div>
         </details>
         )}
@@ -327,6 +355,14 @@ export default function ShipDetailPage() {
       </div>
     </MainLayout>
   );
+}
+
+function formatTrustedTimestamp(value: string | null) {
+  if (!value) return "รอการบันทึกบนระบบออนไลน์";
+  const timestamp = new Date(value);
+  return Number.isNaN(timestamp.getTime())
+    ? value
+    : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(timestamp);
 }
 
 function OperationalAssignmentEditor({

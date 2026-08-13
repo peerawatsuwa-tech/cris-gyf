@@ -10,6 +10,22 @@ export type CurrentEquipmentStatus =
   | "Not Installed"
   | null;
 
+export interface PersonnelBreakdown {
+  officers: number | null;
+  seniorNcos: number | null;
+  pettyOfficers: number | null;
+  conscripts: number | null;
+}
+
+export interface AuthorizedPersonnelBreakdown {
+  officers: number;
+  seniorNcos: number;
+  pettyOfficers: number;
+  conscripts: number;
+}
+
+export type EquipmentDetailStatuses = Record<string, CurrentEquipmentStatus>;
+
 export interface ShipCurrentReadiness {
   crew: number | null;
   propulsion: CurrentEquipmentStatus;
@@ -22,6 +38,8 @@ export interface ShipCurrentReadiness {
   majorDeficiencies: string;
   missionLimitations: string;
   updatedAt: string | null;
+  personnel?: PersonnelBreakdown;
+  equipmentDetails?: EquipmentDetailStatuses;
   assignmentGroup?: import("@/constants/assignments").AssignmentGroup | null;
   assignmentLocation?: import("@/constants/assignments").AssignmentLocation | null;
 }
@@ -29,6 +47,7 @@ export interface ShipCurrentReadiness {
 export interface ShipSourceReference {
   datasetId: string;
   communicationReadinessReference: number | null;
+  authorizedPersonnel?: AuthorizedPersonnelBreakdown;
 }
 
 export interface Ship {

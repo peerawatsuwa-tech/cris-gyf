@@ -1,15 +1,24 @@
+import { useEffect, useMemo, useState } from "react";
+
 import type {
   CurrentEquipmentStatus,
+  EquipmentDetailStatuses,
   Ship,
   ShipCurrentReadiness,
 } from "@/types/ship";
 import { UI } from "@/constants/uiText";
+import {
+  EQUIPMENT_SYSTEMS,
+  equipmentItemKey,
+  systemDeficiencyCounts,
+} from "@/constants/equipmentCatalog";
 
 interface Props {
   ship: Ship;
   onEquipmentChange?: (
     patch: Partial<ShipCurrentReadiness>,
   ) => void;
+  onEquipmentDetailsChange?: (details: EquipmentDetailStatuses) => void;
 }
 
 const BASE_OPTIONS: Array<{
@@ -45,6 +54,8 @@ const rows = [
   allowNotInstalled: boolean;
 }>;
 
+const EMPTY_DETAILS: EquipmentDetailStatuses = {};
+
 function tone(status: CurrentEquipmentStatus) {
   if (status === "Operational") return "text-emerald-400";
   if (status === "Limited") return "text-amber-400";
@@ -53,7 +64,15 @@ function tone(status: CurrentEquipmentStatus) {
   return "text-slate-400";
 }
 
-export default function EquipmentCard({ ship, onEquipmentChange }: Props) {
+export default function EquipmentCard({ ship, onEquipmentChange, onEquipmentDetailsChange }: Props) {
+  const currentDetails = ship.currentReadiness.equipmentDetails ?? EMPTY_DETAILS;
+  const [details, setDetails] = useState<EquipmentDetailStatuses>(currentDetails);
+  useEffect(() => setDetails(currentDetails), [currentDetails]);
+  const detailsDirty = useMemo(
+    () => JSON.stringify(details) !== JSON.stringify(currentDetails),
+    [currentDetails, details],
+  );
+
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
       <h3 className="text-lg font-semibold text-white">
@@ -104,6 +123,61 @@ export default function EquipmentCard({ ship, onEquipmentChange }: Props) {
             </label>
           );
         })}
+      </div>
+
+      <div className="mt-7 border-t border-slate-800 pt-5">
+        <h4 className="font-bold text-white">รายการอุปกรณ์ทั้งหมดจาก Excel</h4>
+        <p className="mt-1 text-xs text-slate-500">สถานะส่วนนี้ใช้รายงานข้อขัดข้องรายระบบ และไม่เปลี่ยน Readiness Engine</p>
+        <div className="mt-4 space-y-3">
+          {EQUIPMENT_SYSTEMS.map((system) => {
+            const counts = systemDeficiencyCounts(details, system.id);
+            return (
+              <details key={system.id} className="rounded-xl border border-slate-800 bg-slate-950/50">
+                <summary className="cursor-pointer list-none p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-slate-200">{system.label}</p>
+                      <p className="text-xs text-slate-500">Excel: {system.sourceSheet}</p>
+                    </div>
+                    <p className="text-xs"><span className="text-amber-300">Q {counts.limited}</span> · <span className="text-rose-300">N {counts.critical}</span></p>
+                  </div>
+                </summary>
+                <div className="space-y-2 border-t border-slate-800 p-3">
+                  {system.items.map((item) => {
+                    const key = equipmentItemKey(system.id, item);
+                    const status = details[key] ?? null;
+                    return (
+                      <label key={key} className="grid items-center gap-2 sm:grid-cols-[1fr_12rem]">
+                        <span className="text-sm text-slate-300">{item}</span>
+                        <select
+                          aria-label={`${system.label} ${item}`}
+                          value={status ?? ""}
+                          onChange={(event) => setDetails((previous) => ({
+                            ...previous,
+                            [key]: event.target.value === "" ? null : event.target.value as CurrentEquipmentStatus,
+                          }))}
+                          className={`rounded-lg border border-slate-700 bg-slate-900 p-2 text-sm ${tone(status)}`}
+                        >
+                          {[...BASE_OPTIONS, { value: "Not Installed" as const, label: UI.status.notInstalled }].map((option) => (
+                            <option key={option.label} value={option.value ?? ""}>{option.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                    );
+                  })}
+                </div>
+              </details>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          disabled={!detailsDirty}
+          onClick={() => onEquipmentDetailsChange?.(details)}
+          className="mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          บันทึกรายการอุปกรณ์
+        </button>
       </div>
     </div>
   );

@@ -26,7 +26,8 @@ import type { Ship } from "@/types/ship";
 export type DrilldownSelection =
   | { kind: "status"; status: ReadinessStatus }
   | { kind: "deficiency"; key: DeficiencyKey; title: string }
-  | { kind: "mission"; missionId: ActiveMissionId };
+  | { kind: "mission"; missionId: ActiveMissionId }
+  | { kind: "supportMission" };
 
 const tone: Record<ReadinessStatus, string> = {
   Y: "border-emerald-500/30 text-emerald-300",
@@ -57,8 +58,11 @@ export default function ReadinessDrilldownModal({
     if (selection.kind === "deficiency") {
       return { title: selection.title, ships: fleet.filter((ship) => matchesDeficiency(ship, selection.key)) };
     }
-    const mission = ACTIVE_MISSIONS.find((item) => item.id === selection.missionId)!;
-    return { title: mission.name, ships: fleet };
+    if (selection.kind === "mission") {
+      const mission = ACTIVE_MISSIONS.find((item) => item.id === selection.missionId)!;
+      return { title: mission.name, ships: fleet };
+    }
+    return { title: "สนับสนุนภารกิจอื่น ๆ (Other Mission Support)", ships: fleet };
   }, [fleet, selection, summary.shipResults]);
 
   useEffect(() => {
@@ -83,7 +87,9 @@ export default function ReadinessDrilldownModal({
 
   const mission = selection.kind === "mission"
     ? summary.missions.find((item) => item.id === selection.missionId)
-    : null;
+    : selection.kind === "supportMission"
+      ? { distribution: summary.counts }
+      : null;
   const missionCapability = mission ? aggregateMissionCapability(mission.distribution) : null;
   const updatedAt = latestUpdate(detail.ships);
   const percentage = fleet.length ? (detail.ships.length / fleet.length) * 100 : 0;
@@ -106,7 +112,7 @@ export default function ReadinessDrilldownModal({
             <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-400">รายละเอียดความพร้อม (Readiness Detail)</p>
             <h2 id="readiness-drilldown-title" className="mt-1 text-xl font-black text-white sm:text-2xl">{detail.title}</h2>
             <p className="mt-1 text-sm text-slate-400">
-              {selection.kind === "mission" ? `สถานะภาพรวม ${readinessStatusText(missionCapability!.status)}` : `${detail.ships.length} ลำ จาก ${fleet.length} ลำ · ${percentage.toFixed(1)}%`}
+              {selection.kind === "mission" || selection.kind === "supportMission" ? `สถานะภาพรวม ${readinessStatusText(missionCapability!.status)}` : `${detail.ships.length} ลำ จาก ${fleet.length} ลำ · ${percentage.toFixed(1)}%`}
               {updatedAt ? ` · ${UI.labels.lastUpdated}: ${formatDate(updatedAt)}` : ""}
             </p>
           </div>
@@ -130,6 +136,20 @@ export default function ReadinessDrilldownModal({
                   <div key={status} className={`rounded-lg border bg-slate-950/60 p-3 ${tone[status]}`}>
                     <p className="text-xs">{readinessStatusText(status)}</p>
                     <p className="mt-1 text-2xl font-black">{mission!.distribution[status]}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          {selection.kind === "supportMission" && (
+            <section className="mt-4 rounded-xl border border-sky-800/50 bg-slate-950/40 p-4">
+              <p className="text-sm font-bold text-white">กฎการรวมผลภารกิจ</p>
+              <p className="mt-2 text-sm text-slate-300">ใช้ Fleet Capability และ Mission Aggregation เดียวกับ 3 ภารกิจเดิม โดยไม่เพิ่มหรือเปลี่ยนกฎประเมินรายลำ</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {(["Y", "Q", "N", "U"] as ReadinessStatus[]).map((status) => (
+                  <div key={status} className={`rounded-lg border bg-slate-950/60 p-3 ${tone[status]}`}>
+                    <p className="text-xs">{readinessStatusText(status)}</p>
+                    <p className="mt-1 text-2xl font-black">{summary.counts[status]}</p>
                   </div>
                 ))}
               </div>

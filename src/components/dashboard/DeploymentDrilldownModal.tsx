@@ -52,7 +52,7 @@ export default function DeploymentDrilldownModal({ ships, selection, onClose }: 
                         <div>
                           <h4 className="font-black text-white">{ship.hullNumber} · {readinessStatusText(readiness)}</h4>
                           <p className="mt-1 text-sm text-slate-400">{assignmentLabel(ship.currentReadiness.assignmentGroup ?? null, ship.currentReadiness.assignmentLocation ?? null)}</p>
-                          <p className="mt-1 text-xs text-slate-500">กำลังพล {ship.currentReadiness.crew ?? "—"}/{ship.authorizedCrew} · {UI.labels.lastUpdated}: {ship.currentReadiness.updatedAt ?? "—"}</p>
+                          <p className="mt-1 text-xs text-slate-500">กำลังพล {ship.currentReadiness.crew ?? "—"}/{ship.authorizedCrew} · {UI.labels.lastUpdated}: {formatTimestamp(ship.currentReadiness.updatedAt)}</p>
                           {deficiency && <p className="mt-1 text-xs text-amber-200">{UI.sections.majorDeficiencies}: {deficiency}</p>}
                         </div>
                         <Link to={`/ship/${ship.id}`} className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-500">{UI.actions.openShipDetail}<ArrowRight className="h-4 w-4" /></Link>
@@ -67,4 +67,12 @@ export default function DeploymentDrilldownModal({ ships, selection, onClose }: 
       </section>
     </div>
   );
+}
+
+function formatTimestamp(value: string | null) {
+  if (!value) return "—";
+  const timestamp = new Date(value);
+  return Number.isNaN(timestamp.getTime())
+    ? value
+    : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(timestamp);
 }

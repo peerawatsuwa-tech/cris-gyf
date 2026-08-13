@@ -21,9 +21,17 @@ export default function AssessmentPage() {
   const { fleet } = useFleet();
   const summary = useMemo(() => {
     const current = summarizeFleet(fleet);
+    const missions = [
+      ...current.missions,
+      {
+        id: "M5" as const,
+        name: "สนับสนุนภารกิจอื่น ๆ (Other Mission Support)",
+        distribution: current.counts,
+      },
+    ];
     return {
       ...current,
-      missions: current.missions.map((mission) => {
+      missions: missions.map((mission) => {
         const capability = aggregateMissionCapability(mission.distribution);
         return { ...mission, status: capability.status, capability };
       }),
@@ -66,7 +74,7 @@ export default function AssessmentPage() {
             </p>
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {summary.missions.map((mission) => (
               <article
                 key={mission.id}

@@ -9,8 +9,20 @@ import {
   type ReadinessStatus,
 } from "@/lib/readinessV027";
 import type { Ship } from "@/types/ship";
+import {
+  EQUIPMENT_SYSTEMS,
+  equipmentItemKey,
+  systemDeficiencyCounts,
+  type EquipmentSystemId,
+} from "@/constants/equipmentCatalog";
 
-export type DeficiencyKey = "crew" | "rhib" | "radar" | "critical";
+export type DeficiencyKey = "crew" | "rhib" | "radar" | "critical" | `detail:${EquipmentSystemId}`;
+
+function detailedSystemForKey(key: DeficiencyKey) {
+  if (!key.startsWith("detail:")) return null;
+  const systemId = key.slice("detail:".length) as EquipmentSystemId;
+  return EQUIPMENT_SYSTEMS.find((system) => system.id === systemId) ?? null;
+}
 
 export const SYSTEM_LABELS: Record<CurrentSystemKey, string> = {
   propulsion: "ระบบขับเคลื่อน (Propulsion)",
@@ -54,6 +66,11 @@ export function matchesDeficiency(ship: Ship, key: DeficiencyKey) {
   if (key === "rhib" || key === "radar") {
     return current[key] === "Limited" || current[key] === "Not Ready";
   }
+  const detailedSystem = detailedSystemForKey(key);
+  if (detailedSystem) {
+    const counts = systemDeficiencyCounts(current.equipmentDetails, detailedSystem.id);
+    return counts.limited > 0 || counts.critical > 0;
+  }
   return SYSTEM_KEYS.some((system) => current[system] === "Not Ready");
 }
 
@@ -66,6 +83,14 @@ export function deficiencyValue(ship: Ship, key: DeficiencyKey) {
   if (key === "rhib" || key === "radar") {
     return `${SYSTEM_LABELS[key]}: ${ship.currentReadiness[key] ?? "รอการประเมิน"}`;
   }
+  const detailedSystem = detailedSystemForKey(key);
+  if (detailedSystem) {
+    return detailedSystem.items
+      .map((item) => ({ item, status: ship.currentReadiness.equipmentDetails?.[equipmentItemKey(detailedSystem.id, item)] }))
+      .filter(({ status }) => status === "Limited" || status === "Not Ready")
+      .map(({ item, status }) => `${item}: ${status === "Limited" ? "Operational Limitation (Q)" : "Mission Critical (N)"}`)
+      .join(", ");
+  }
   return affectedSystems(ship)
     .filter((item) => item.status === "Not Ready")
     .map((item) => item.label)
@@ -76,6 +101,12 @@ export function deficiencySeverity(ship: Ship, key: DeficiencyKey) {
   if (key === "crew") {
     const ratio = (ship.currentReadiness.crew ?? 0) / ship.authorizedCrew;
     return ratio < 0.75 ? "สูง (High)" : "ปานกลาง (Moderate)";
+  }
+  const detailedSystem = detailedSystemForKey(key);
+  if (detailedSystem) {
+    return systemDeficiencyCounts(ship.currentReadiness.equipmentDetails, detailedSystem.id).critical > 0
+      ? "สูง (Mission Critical)"
+      : "ปานกลาง (Operational Limitation)";
   }
   const systems = key === "critical" ? affectedSystems(ship) : affectedSystems(ship).filter((item) => item.key === key);
   return systems.some((item) => item.status === "Not Ready") ? "สูง (High)" : "ปานกลาง (Moderate)";

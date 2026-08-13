@@ -33,7 +33,7 @@ export default function DeploymentDrilldownModal({ ships, selection, onClose }: 
       <section role="dialog" aria-modal="true" aria-labelledby="deployment-modal-title" onKeyDown={(event) => event.key === "Escape" && onClose()} className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-sky-500/30 bg-[#07152a] shadow-2xl">
         <header className="flex items-start justify-between gap-4 border-b border-slate-700/70 p-4 sm:p-5">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-400">การกระจายกำลังเรือ (Fleet Deployment)</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-400">ภาพสถานการณ์กองเรือ (Fleet Situation)</p>
             <h2 id="deployment-modal-title" className="mt-1 text-2xl font-black text-white">{assignmentGroupLabel(selection)} — {selected.length} ลำ</h2>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="ปิดหน้าต่าง (Close)" className="rounded-lg border border-slate-700 p-2 text-slate-300 hover:border-sky-400 hover:text-white"><X className="h-5 w-5" /></button>

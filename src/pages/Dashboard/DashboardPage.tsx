@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldAlert } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import ReadinessDrilldownModal, { type DrilldownSelection } from "@/components/dashboard/ReadinessDrilldownModal";
 import DeploymentDrilldownModal, { type DeploymentSelection } from "@/components/dashboard/DeploymentDrilldownModal";
@@ -11,8 +12,11 @@ import { aggregateMissionCapability } from "@/lib/missionAggregation";
 import { summarizeFleet, type ReadinessStatus } from "@/lib/readinessV027";
 import {
   EQUIPMENT_SYSTEMS,
-  systemDeficiencyCounts,
+  systemEquipmentStatuses,
 } from "@/constants/equipmentCatalog";
+import { AUTHORIZED_PERSONNEL, PERSONNEL_FIELDS } from "@/constants/personnelCatalog";
+import { meaningfulDetail } from "@/lib/readinessDetailPresenter";
+import { evaluateShip } from "@/lib/readinessV027";
 
 const statusTone: Record<ReadinessStatus, string> = {
   Y: "text-emerald-300 border-emerald-500/30 bg-emerald-500/5",
@@ -58,29 +62,61 @@ export default function DashboardPage() {
         const capability = aggregateMissionCapability(mission.distribution);
         return { ...mission, status: capability.status, capability };
       }),
-      deficiencies: EQUIPMENT_SYSTEMS.map((system) => {
-        const perShip = fleet.map((ship) => systemDeficiencyCounts(ship.currentReadiness.equipmentDetails, system.id));
-        return {
-          key: `detail:${system.id}` as const,
-          label: system.label,
-          limitedShips: perShip.filter((counts) => counts.limited > 0).length,
-          criticalShips: perShip.filter((counts) => counts.critical > 0).length,
-          unknown: perShip.filter((counts) => counts.recorded < system.items.length).length,
-        };
+      equipment: EQUIPMENT_SYSTEMS.map((system) => {
+        const counts = { Y: 0, Q: 0, N: 0, U: 0 };
+        fleet.forEach((ship) => {
+          const statuses = systemEquipmentStatuses(ship.currentReadiness.equipmentDetails, system.id);
+          const assessed = statuses.filter((status) => status !== null);
+          if (statuses.includes("Not Ready")) counts.N += 1;
+          else if (statuses.includes("Limited")) counts.Q += 1;
+          else if (assessed.length === system.items.length) counts.Y += 1;
+          else counts.U += 1;
+        });
+        return { key: `detail:${system.id}` as const, label: system.label, counts };
       }),
+      personnel: PERSONNEL_FIELDS.map(({ key, label }) => {
+        let shortage = 0;
+        let assessedShips = 0;
+        fleet.forEach((ship) => {
+          const required = AUTHORIZED_PERSONNEL[ship.hullNumber]?.[key];
+          const current = ship.currentReadiness.personnel?.[key];
+          if (required !== undefined && current !== null && current !== undefined) {
+            assessedShips += 1;
+            shortage += Math.max(required - current, 0);
+          }
+        });
+        return { key, label, shortage, assessedShips };
+      }),
+      risks: fleet
+        .map((ship) => ({
+          ship,
+          status: evaluateShip(ship).status,
+          deficiency: meaningfulDetail(ship.currentReadiness.majorDeficiencies),
+          updatedAt: ship.currentReadiness.updatedAt,
+        }))
+        .filter((risk) => risk.status === "N" || risk.status === "Q" || risk.deficiency)
+        .sort((left, right) => {
+          const rank = { N: 0, Q: 1, Y: 2, U: 3 };
+          return rank[left.status] - rank[right.status]
+            || Number(Boolean(right.deficiency)) - Number(Boolean(left.deficiency))
+            || new Date(left.updatedAt ?? 0).getTime() - new Date(right.updatedAt ?? 0).getTime();
+        })
+        .slice(0, 10),
     };
   }, [fleet]);
 
   const deployment = useMemo(() => {
     const counts = Object.fromEntries(ASSIGNMENT_GROUPS.map((group) => [group, fleet.filter((ship) => ship.currentReadiness.assignmentGroup === group).length])) as Record<(typeof ASSIGNMENT_GROUPS)[number], number>;
-    const unspecified = fleet.filter((ship) => !ship.currentReadiness.assignmentGroup).length;
-    const operatingAreas = counts["ทรภ.1"] + counts["ทรภ.2"] + counts["ทรภ.3"];
+    const operatingAreas = counts["ทรภ.1"] + counts["ทรภ.2"] + counts["ทรภ.3"] + counts["มรภ.ฐท.สส."];
+    const operationalPercent = fleet.length ? (operatingAreas / fleet.length) * 100 : 0;
+    const readyPercent = fleet.length ? (dashboard.counts.Y / fleet.length) * 100 : 0;
     return {
       counts,
-      unspecified,
-      summary: `เรือพร้อมที่ตั้งปกติ ${counts["พร้อมที่ตั้งปกติ"]} ลำ ปฏิบัติราชการในพื้นที่ ทรภ.1–3 รวม ${operatingAreas} ลำ และอยู่ระหว่างซ่อมทำ ${counts["ซ่อมทำ"]} ลำ${unspecified > 0 ? ` · ยังมีเรือ ${unspecified} ลำที่ยังไม่ระบุสถานะการปฏิบัติราชการ` : ""}`,
+      operatingAreas,
+      operationalPercent,
+      readyPercent,
     };
-  }, [fleet]);
+  }, [dashboard.counts.Y, fleet]);
 
   return (
     <MainLayout>
@@ -92,16 +128,16 @@ export default function DashboardPage() {
           <h1 className="mt-1 text-3xl font-black text-white">{UI.pages.dashboard}</h1>
         </section>
 
-        <section className="rounded-2xl border border-sky-700/40 bg-sky-950/25 p-5">
-          <SectionTitle title={UI.sections.commanderSummary} />
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="rounded-2xl border border-sky-500/40 bg-gradient-to-br from-sky-950/55 to-slate-950/80 p-5">
+          <SectionTitle title="สถานการณ์กองเรือวันนี้ (Fleet Today)" />
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
             <CommanderMetric label={UI.labels.allShips} value={fleet.length} />
-            <CommanderMetric
-              label={UI.labels.assessed}
-              value={dashboard.counts.Y + dashboard.counts.Q + dashboard.counts.N}
-            />
-            <CommanderMetric label={UI.status.U} value={dashboard.counts.U} tone="text-sky-200" />
+            <CommanderMetric label={UI.status.Y} value={dashboard.counts.Y} tone="text-emerald-300" />
+            <CommanderMetric label={UI.status.Q} value={dashboard.counts.Q} tone="text-amber-300" />
             <CommanderMetric label={UI.status.N} value={dashboard.counts.N} tone="text-rose-300" />
+            <CommanderMetric label="ออกปฏิบัติราชการ" value={deployment.operatingAreas} tone="text-sky-200" />
+            <CommanderMetric label="ซ่อมทำ" value={deployment.counts["ซ่อมทำ"]} tone="text-amber-200" />
+            <CommanderMetric label="พร้อมที่ตั้ง" value={deployment.counts["พร้อมที่ตั้งปกติ"]} />
           </div>
         </section>
 
@@ -174,25 +210,27 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <SectionTitle title={UI.sections.majorDeficiencies} />
-          <div className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-4">
-            {dashboard.deficiencies.map(({ key, label, limitedShips, criticalShips, unknown }) => (
+          <SectionTitle title="สรุปความพร้อมอุปกรณ์ (Equipment Readiness Summary)" />
+          <p className="mt-1 text-xs text-slate-500">คำนวณจาก Equipment Assessment โดยตรง ไม่ใช้ข้อความ Major Deficiency</p>
+          <div className="mt-3 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {dashboard.equipment.map(({ key, label, counts }) => (
               <button
                 key={label}
                 type="button"
                 onClick={(event) => openDrilldown({ kind: "deficiency", key, title: label }, event.currentTarget)}
-                aria-label={`เปิดรายละเอียด ${label} Q ${limitedShips} ลำ N ${criticalShips} ลำ`}
+                aria-label={`เปิดรายละเอียด ${label} Y ${counts.Y} Q ${counts.Q} N ${counts.N} รอ ${counts.U} ลำ`}
                 className="h-full cursor-pointer rounded-2xl border border-slate-800 bg-slate-950/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-sky-600/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
               >
                 <div className="flex items-center justify-between text-slate-500">
                   <p className="text-sm font-semibold">{label}</p>
                   <AlertTriangle className="h-5 w-5 text-amber-400" />
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-amber-500/5 p-2"><p className="text-xs text-amber-300">Operational Limitation (Q)</p><p className="text-2xl font-black text-amber-200">{limitedShips}</p></div>
-                  <div className="rounded-lg bg-rose-500/5 p-2"><p className="text-xs text-rose-300">Mission Critical (N)</p><p className="text-2xl font-black text-rose-200">{criticalShips}</p></div>
+                <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+                  <EquipmentCount label="Y" value={counts.Y} tone="text-emerald-300" />
+                  <EquipmentCount label="Q" value={counts.Q} tone="text-amber-300" />
+                  <EquipmentCount label="N" value={counts.N} tone="text-rose-300" />
+                  <EquipmentCount label="รอ" value={counts.U} tone="text-sky-200" />
                 </div>
-                <p className="mt-2 text-xs text-sky-300/70">รอการประเมิน {unknown} ลำ</p>
                 <p className="mt-3 text-xs font-semibold text-sky-300/80">กดเพื่อดูรายละเอียด (View Detail)</p>
               </button>
             ))}
@@ -200,11 +238,10 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <SectionTitle title="การกระจายกำลังเรือ (Fleet Deployment)" />
-          <p className="mt-2 rounded-xl border border-sky-800/40 bg-sky-950/20 p-3 text-sm leading-6 text-sky-100">{deployment.summary}</p>
+          <SectionTitle title="ภาพสถานการณ์กองเรือ (Fleet Situation)" />
           <div className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:grid-cols-4">
-            {[...ASSIGNMENT_GROUPS, "unspecified" as const].map((group) => {
-              const value = group === "unspecified" ? deployment.unspecified : deployment.counts[group];
+            {ASSIGNMENT_GROUPS.map((group) => {
+              const value = deployment.counts[group];
               return (
                 <button
                   key={group}
@@ -219,6 +256,42 @@ export default function DashboardPage() {
                 </button>
               );
             })}
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <OperationalInsight label="วันนี้มีเรือออกปฏิบัติราชการ" value={deployment.operatingAreas} percent={deployment.operationalPercent} />
+            <OperationalInsight label="พร้อมปฏิบัติทันที" value={dashboard.counts.Y} percent={deployment.readyPercent} />
+          </div>
+        </section>
+
+        <section>
+          <SectionTitle title="สรุปความพร้อมกำลังพล (Personnel Summary)" />
+          <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {dashboard.personnel.map((item) => (
+              <div key={item.key} className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-sm text-slate-400">{item.label}</p>
+                <p className="mt-2 text-3xl font-black text-amber-200">
+                  {item.assessedShips ? `ขาด ${item.shortage}` : "รอการประเมิน"}
+                </p>
+                <p className="mt-1 text-xs text-sky-300/70">ประเมินแล้ว {item.assessedShips}/{fleet.length} ลำ</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <SectionTitle title="ความเสี่ยงทางปฏิบัติการสูงสุด (Top Operational Risk)" />
+          <div className="mt-3 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/70">
+            {dashboard.risks.length ? dashboard.risks.map(({ ship, status, deficiency, updatedAt }, index) => (
+              <Link key={ship.id} to={`/ship/${ship.id}`} className="flex items-center gap-3 border-b border-slate-800 p-4 transition last:border-0 hover:bg-sky-950/30">
+                <span className="w-6 text-center text-xs font-black text-slate-500">{index + 1}</span>
+                <ShieldAlert className={`h-5 w-5 shrink-0 ${status === "N" ? "text-rose-300" : "text-amber-300"}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">{ship.hullNumber} · {readinessStatusText(status)}</p>
+                  <p className="truncate text-xs text-slate-400">{deficiency ?? "ไม่พบข้อความ Major Deficiency"} · {formatTimestamp(updatedAt)}</p>
+                </div>
+                <ArrowRight className="h-4 w-4 shrink-0 text-sky-300" />
+              </Link>
+            )) : <p className="p-8 text-center text-emerald-300">ไม่พบความเสี่ยงที่ต้องเร่งดำเนินการ</p>}
           </div>
         </section>
 
@@ -255,7 +328,7 @@ function CommanderMetric({
   tone?: string;
 }) {
   return (
-    <div className="flex min-h-24 items-end justify-between rounded-xl border border-sky-800/40 bg-slate-950/45 p-4">
+    <div className="flex min-h-24 min-w-0 items-end justify-between rounded-xl border border-sky-800/40 bg-slate-950/45 p-4">
       <div>
         <p className="text-sm text-slate-400">{label}</p>
         <p className={`mt-2 text-3xl font-black ${tone}`}>{value}</p>
@@ -263,6 +336,31 @@ function CommanderMetric({
       <span className="pb-1 text-sm text-slate-500">ลำ</span>
     </div>
   );
+}
+
+function EquipmentCount({ label, value, tone }: { label: string; value: number; tone: string }) {
+  return <div className="rounded-lg bg-slate-900/80 p-2"><p className={`text-xs font-bold ${tone}`}>{label}</p><p className={`text-xl font-black ${tone}`}>{value}</p></div>;
+}
+
+function OperationalInsight({ label, value, percent }: { label: string; value: number; percent: number }) {
+  return (
+    <div className="rounded-xl border border-sky-800/40 bg-sky-950/20 p-4">
+      <p className="text-sm text-sky-100">{label}</p>
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="text-3xl font-black text-white">{value} ลำ</p>
+        <p className="text-xl font-black text-sky-300">{percent.toFixed(1)}%</p>
+      </div>
+      <p className="mt-1 text-xs text-slate-500">ของกองเรือทั้งหมด</p>
+    </div>
+  );
+}
+
+function formatTimestamp(value: string | null) {
+  if (!value) return "ยังไม่มีเวลาบันทึก";
+  const timestamp = new Date(value);
+  return Number.isNaN(timestamp.getTime())
+    ? value
+    : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(timestamp);
 }
 
 function FleetCell({ label, value, tone }: { label: string; value: number; tone: string }) {

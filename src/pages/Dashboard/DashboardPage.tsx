@@ -15,7 +15,7 @@ import {
   systemEquipmentStatuses,
 } from "@/constants/equipmentCatalog";
 import { AUTHORIZED_PERSONNEL, PERSONNEL_FIELDS } from "@/constants/personnelCatalog";
-import { meaningfulDetail } from "@/lib/readinessDetailPresenter";
+import { meaningfulDetail, shipReasons } from "@/lib/readinessDetailPresenter";
 import { evaluateShip } from "@/lib/readinessV027";
 
 const statusTone: Record<ReadinessStatus, string> = {
@@ -26,7 +26,7 @@ const statusTone: Record<ReadinessStatus, string> = {
 };
 
 export default function DashboardPage() {
-  const { fleet } = useFleet();
+  const { fleet, loading, error } = useFleet();
   const [selection, setSelection] = useState<DrilldownSelection | null>(null);
   const [deploymentSelection, setDeploymentSelection] = useState<DeploymentSelection | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -87,13 +87,27 @@ export default function DashboardPage() {
         });
         return { key, label, shortage, assessedShips };
       }),
+      completeness: {
+        equipment: fleet.filter((ship) => EQUIPMENT_SYSTEMS.every((system) => {
+          const statuses = systemEquipmentStatuses(ship.currentReadiness.equipmentDetails, system.id);
+          return statuses.length === system.items.length && statuses.every((status) => status !== null);
+        })).length,
+        personnel: fleet.filter((ship) => PERSONNEL_FIELDS.every(({ key }) =>
+          ship.currentReadiness.personnel?.[key] !== null &&
+          ship.currentReadiness.personnel?.[key] !== undefined,
+        )).length,
+      },
       risks: fleet
-        .map((ship) => ({
-          ship,
-          status: evaluateShip(ship).status,
-          deficiency: meaningfulDetail(ship.currentReadiness.majorDeficiencies),
-          updatedAt: ship.currentReadiness.updatedAt,
-        }))
+        .map((ship) => {
+          const evaluation = evaluateShip(ship);
+          return {
+            ship,
+            status: evaluation.status,
+            primaryReason: shipReasons(ship)[0] ?? "รอข้อมูลเหตุผลจากการประเมิน",
+            deficiency: meaningfulDetail(ship.currentReadiness.majorDeficiencies),
+            updatedAt: ship.currentReadiness.updatedAt,
+          };
+        })
         .filter((risk) => risk.status === "N" || risk.status === "Q" || risk.deficiency)
         .sort((left, right) => {
           const rank = { N: 0, Q: 1, Y: 2, U: 3 };
@@ -118,6 +132,18 @@ export default function DashboardPage() {
     };
   }, [dashboard.counts.Y, fleet]);
 
+  if (loading) {
+    return <DashboardState title="กำลังโหลดข้อมูลกองเรือ..." detail="ระบบกำลังรับข้อมูลล่าสุดจากฐานข้อมูลกลาง" />;
+  }
+
+  if (error) {
+    return <DashboardState title="ไม่สามารถโหลดข้อมูลกองเรือได้" detail={error} tone="error" />;
+  }
+
+  if (fleet.length === 0) {
+    return <DashboardState title="ไม่พบข้อมูลกองเรือ" detail="ไม่มีข้อมูลเรือที่ผู้ใช้รายนี้ได้รับอนุญาตให้เข้าถึง" />;
+  }
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -126,6 +152,15 @@ export default function DashboardPage() {
             CRIS v0.28 · {UI.labels.cloudDataset}
           </p>
           <h1 className="mt-1 text-3xl font-black text-white">{UI.pages.dashboard}</h1>
+        </section>
+
+        <section className="rounded-2xl border border-sky-800/50 bg-sky-950/20 p-5">
+          <SectionTitle title="ความครบถ้วนของข้อมูล (Data Completeness)" />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <CompletenessMetric label="ข้อมูลอุปกรณ์" assessed={dashboard.completeness.equipment} total={fleet.length} />
+            <CompletenessMetric label="ข้อมูลกำลังพล" assessed={dashboard.completeness.personnel} total={fleet.length} />
+          </div>
+          <p className="mt-3 text-xs text-slate-400">ยังไม่ประเมิน หมายถึงข้อมูลไม่เพียงพอ และไม่ถูกตีความว่าไม่มีปัญหาหรือพร้อมใช้งาน</p>
         </section>
 
         <section className="rounded-2xl border border-sky-500/40 bg-gradient-to-br from-sky-950/55 to-slate-950/80 p-5">
@@ -281,13 +316,14 @@ export default function DashboardPage() {
         <section>
           <SectionTitle title="ความเสี่ยงทางปฏิบัติการสูงสุด (Top Operational Risk)" />
           <div className="mt-3 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/70">
-            {dashboard.risks.length ? dashboard.risks.map(({ ship, status, deficiency, updatedAt }, index) => (
+            {dashboard.risks.length ? dashboard.risks.map(({ ship, status, primaryReason, deficiency, updatedAt }, index) => (
               <Link key={ship.id} to={`/ship/${ship.id}`} className="flex items-center gap-3 border-b border-slate-800 p-4 transition last:border-0 hover:bg-sky-950/30">
                 <span className="w-6 text-center text-xs font-black text-slate-500">{index + 1}</span>
                 <ShieldAlert className={`h-5 w-5 shrink-0 ${status === "N" ? "text-rose-300" : "text-amber-300"}`} />
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-white">{ship.hullNumber} · {readinessStatusText(status)}</p>
-                  <p className="truncate text-xs text-slate-400">{deficiency ?? "ไม่พบข้อความ Major Deficiency"} · {formatTimestamp(updatedAt)}</p>
+                  <p className="truncate text-xs text-slate-300">เหตุผลหลัก: {primaryReason}</p>
+                  <p className="truncate text-xs text-slate-500">{deficiency ? `ข้อขัดข้องประกอบ: ${deficiency} · ` : ""}{formatTimestamp(updatedAt)}</p>
                 </div>
                 <ArrowRight className="h-4 w-4 shrink-0 text-sky-300" />
               </Link>
@@ -309,6 +345,32 @@ export default function DashboardPage() {
       {selection && <ReadinessDrilldownModal fleet={fleet} selection={selection} onClose={closeDrilldown} />}
       {deploymentSelection && <DeploymentDrilldownModal ships={fleet} selection={deploymentSelection} onClose={closeDeployment} />}
     </MainLayout>
+  );
+}
+
+function DashboardState({ title, detail, tone = "loading" }: { title: string; detail: string; tone?: "loading" | "error" }) {
+  return (
+    <MainLayout>
+      <section
+        role="status"
+        aria-live="polite"
+        className={`rounded-2xl border p-8 text-center ${tone === "error" ? "border-rose-800 bg-rose-950/20" : "border-sky-800 bg-sky-950/20"}`}
+      >
+        <p className={`text-xl font-black ${tone === "error" ? "text-rose-300" : "text-sky-200"}`}>{title}</p>
+        <p className="mt-2 text-sm text-slate-400">{detail}</p>
+      </section>
+    </MainLayout>
+  );
+}
+
+function CompletenessMetric({ label, assessed, total }: { label: string; assessed: number; total: number }) {
+  const complete = total > 0 && assessed === total;
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+      <p className="text-sm text-slate-400">{label}</p>
+      <p className={`mt-2 text-2xl font-black ${complete ? "text-emerald-300" : "text-sky-200"}`}>ประเมินแล้ว {assessed}/{total}</p>
+      <p className="mt-1 text-xs text-slate-500">{complete ? "ข้อมูลครบทุกลำ" : `ยังไม่ประเมิน ${Math.max(total - assessed, 0)} ลำ`}</p>
+    </div>
   );
 }
 

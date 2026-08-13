@@ -78,6 +78,7 @@ export default function ShipDetailPage() {
   const { profile } = useAuth();
   const {
     fleet,
+    loading,
     lastSavedShipId,
     patchCurrentReadiness,
     saveState,
@@ -86,6 +87,17 @@ export default function ShipDetailPage() {
   const canEdit =
     profile?.role === "admin" ||
     (profile?.role === "ship" && (!profile.shipId || profile.shipId === id));
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <section role="status" aria-live="polite" className="rounded-xl border border-sky-800 bg-sky-950/20 p-10 text-center">
+          <h1 className="text-xl font-bold text-sky-200">กำลังโหลดข้อมูลเรือ...</h1>
+          <p className="mt-2 text-sm text-slate-400">ระบบกำลังรับข้อมูลล่าสุดจากฐานข้อมูลกลาง</p>
+        </section>
+      </MainLayout>
+    );
+  }
 
   if (!ship) {
     return (
@@ -282,7 +294,7 @@ export default function ShipDetailPage() {
         </div>
 
         {canEdit && (
-        <details className="group rounded-2xl border border-slate-800 bg-slate-950/60">
+        <details open={profile?.role === "ship"} className="group rounded-2xl border border-slate-800 bg-slate-950/60">
           <summary className="flex cursor-pointer list-none items-center justify-between p-5">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-400">
@@ -305,6 +317,8 @@ export default function ShipDetailPage() {
             <ChevronDown className="h-5 w-5 text-sky-400 transition group-open:rotate-180" />
           </summary>
           <div className="space-y-4 border-t border-slate-800 p-5">
+            <ReportingWorkflowSteps saveState={lastSavedShipId === ship.id ? saveState : "idle"} />
+            <WorkflowSectionLabel step="1" title="ภารกิจราชการและพื้นที่" />
             <OperationalAssignmentEditor
               group={ship.currentReadiness.assignmentGroup ?? null}
               location={ship.currentReadiness.assignmentLocation ?? null}
@@ -312,17 +326,22 @@ export default function ShipDetailPage() {
                 patchCurrentReadiness(ship.id, { assignmentGroup, assignmentLocation })
               }
             />
+            <WorkflowSectionLabel step="2" title="กำลังพล" />
             <div className="grid gap-4 lg:grid-cols-2">
               <PersonnelCard
                 ship={ship}
                 onPersonnelChange={(personnel) => patchCurrentReadiness(ship.id, { personnel })}
               />
+              <div>
+                <WorkflowSectionLabel step="3" title="อุปกรณ์" compact />
               <EquipmentCard
                 ship={ship}
                 onEquipmentChange={(patch) => patchCurrentReadiness(ship.id, patch)}
                 onEquipmentDetailsChange={(equipmentDetails) => patchCurrentReadiness(ship.id, { equipmentDetails })}
               />
+              </div>
             </div>
+            <WorkflowSectionLabel step="4" title="ข้อจำกัดและข้อขัดข้อง" />
             <div className="grid gap-4 lg:grid-cols-2">
               <TextField
                 label={UI.sections.majorDeficiencies}
@@ -340,7 +359,7 @@ export default function ShipDetailPage() {
               />
             </div>
             <p className="rounded-lg border border-sky-800/40 bg-sky-950/20 p-3 text-xs text-sky-100">
-              {UI.labels.lastUpdated}: {formatTrustedTimestamp(ship.currentReadiness.updatedAt)} · กำหนดโดยฐานข้อมูลออนไลน์อัตโนมัติ
+              ขั้นตอนบันทึกและยืนยันเวลา · {UI.labels.lastUpdated}: {formatTrustedTimestamp(ship.currentReadiness.updatedAt)} · กำหนดโดยฐานข้อมูลออนไลน์อัตโนมัติ
             </p>
           </div>
         </details>
@@ -355,6 +374,25 @@ export default function ShipDetailPage() {
       </div>
     </MainLayout>
   );
+}
+
+function ReportingWorkflowSteps({ saveState }: { saveState: "idle" | "saved" | "error" }) {
+  const stateText = saveState === "saved"
+    ? "บันทึกสำเร็จ"
+    : saveState === "error"
+      ? "บันทึกไม่สำเร็จ"
+      : "ระบบบันทึกอัตโนมัติเมื่อแก้ไขข้อมูล";
+  return (
+    <section className="rounded-xl border border-sky-800/50 bg-sky-950/20 p-4">
+      <p className="text-sm font-bold text-white">ขั้นตอนรายงานข้อมูลเรือ</p>
+      <p className="mt-2 text-sm text-sky-100">เลือกเรือ → ตรวจข้อมูล → แก้ข้อมูล → บันทึก → ยืนยันเวลาจากระบบ</p>
+      <p className={`mt-2 text-xs font-semibold ${saveState === "error" ? "text-rose-300" : saveState === "saved" ? "text-emerald-300" : "text-slate-400"}`}>{stateText}</p>
+    </section>
+  );
+}
+
+function WorkflowSectionLabel({ step, title, compact = false }: { step: string; title: string; compact?: boolean }) {
+  return <p className={`${compact ? "mb-2" : ""} text-xs font-black uppercase tracking-[0.16em] text-sky-400`}>ขั้นที่ {step} · {title}</p>;
 }
 
 function formatTrustedTimestamp(value: string | null) {
